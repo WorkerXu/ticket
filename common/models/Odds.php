@@ -3,6 +3,7 @@ namespace common\models;
 
 use yii\base\Model;
 use common\helpers\Curl;
+use yii\helpers\ArrayHelper;
 
 /**
  * Odds model
@@ -14,6 +15,7 @@ class Odds extends Model
 
     private static $BET_ODD;
     private static $LIJI_ODD;
+    private static $MATCH_RANK;
 
     public static function getBetOdd()
     {
@@ -23,6 +25,11 @@ class Odds extends Model
     public static function getLijiOdd()
     {
         return self::isJson(self::$LIJI_ODD) ? self::$LIJI_ODD : '{}';
+    }
+
+    public static function getMatchRank()
+    {
+        return self::isJson(self::$MATCH_RANK) ? self::$MATCH_RANK : '{}';
     }
 
     public static function getData($json)
@@ -49,6 +56,102 @@ class Odds extends Model
 
             }
             $i++;
+        }
+
+        return $res;
+    }
+
+    public static function getRank($rank, $table = "home")
+    {
+        $res['name']      = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.name');
+        $res['win']       = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.win');
+        $res['draw']      = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.draw');
+        $res['lost']      = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.lost');
+        $res['score']     = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.score');
+        $res['innum']     = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.innum');
+        $res['lostnum']   = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.lostnum');
+        $res['standing']  = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.standing');
+        $res['cwin']      = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.cwin');
+        $res['cdraw']     = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.cdraw');
+        $res['clost']     = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.clost');
+        $res['cscore']    = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.cscore');
+        $res['cinnum']    = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.cinnum');
+        $res['clostnum']  = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.clostnum');
+        $res['cstanding'] = ArrayHelper::getValue($rank, 'ranks.0.'.$table.'standing.cstanding');
+        $res['type']      = $table;
+
+        return $res;
+    }
+
+    public static function getDetail($rank, $type = "fuck")
+    {
+        $i = 0;
+        $res = array();
+        $details = ArrayHelper::getValue($rank, $type."_datadetail", array());
+        foreach ($details as $detail)
+        {
+            $res[$i]['fid']   = $detail->fid;
+            $res[$i]['date']  = $detail->date;
+            $res[$i]['home']  = $detail->home;
+            $res[$i]['away']  = $detail->away;
+            $res[$i]['score'] = $detail->score;
+            $res[$i]['handi'] = $detail->handi;
+            $res[$i]['league'] = $detail->league;
+            $res[$i]['type']  = $type;
+
+            $i++;
+        }
+        return $res;
+    }
+
+    public static function getTotal($rank, $type = "fuck")
+    {
+        $res['lostrate'] = ArrayHelper::getValue($rank, $type.'_datatotal.lostrate');
+        $res['drawrate'] = ArrayHelper::getValue($rank, $type.'_datatotal.drawrate');
+        $res['winrate']  = ArrayHelper::getValue($rank, $type.'_datatotal.winrate');
+        $res['win']      = ArrayHelper::getValue($rank, $type.'_datatotal.win');
+        $res['draw']     = ArrayHelper::getValue($rank, $type.'_datatotal.draw');
+        $res['lost']     = ArrayHelper::getValue($rank, $type.'_datatotal.lost');
+        $res['lostnum']  = ArrayHelper::getValue($rank, $type.'_datatotal.lostnum');
+        $res['innum']    = ArrayHelper::getValue($rank, $type.'_datatotal.innum');
+        $res['type']     = $type;
+
+        return $res;
+    }
+
+    public static function getPower($rank, $type = "h")
+    {
+        $res['worth_score']   = ArrayHelper::getValue($rank, $type.'power.worth_score');
+        $res['attack_score']  = ArrayHelper::getValue($rank, $type.'power.attack_score');
+        $res['defend_score']  = ArrayHelper::getValue($rank, $type.'power.defend_score');
+        $res['tech_score']    = ArrayHelper::getValue($rank, $type.'power.tech_score');
+        $res['state_score']   = ArrayHelper::getValue($rank, $type.'power.state_score');
+        $res['grade']         = ArrayHelper::getValue($rank, $type.'power.grade');
+        $res['total_score']   = ArrayHelper::getValue($rank, $type.'power.total_score');
+        $res['type']          = $type;
+
+        return $res;
+    }
+
+    public static function getTmpOdd($odds, $tag)
+    {
+        $count = count($odds);
+        $i = 0;
+        $res = array();
+
+        for ($key = 0; $key < $count; $key++)
+        {
+            if(isset($odds[$key]->time) && isset($odds[$key-1]->time) && (strtotime($odds[$key-1]->time) - strtotime($odds[$key]->time) >= 3600) && $key != $count-1){
+                $res[$i]['tag'] = $tag;
+                $res[$i]['time'] = $odds[$key]->time;
+                $res[$i]['home'] = $odds[$key]->home;
+                $res[$i]['away'] = $odds[$key]->away;
+                $res[$i]['odd']  = $odds[$key]->handi;
+                $res[$i]['home_text'] = $odds[$key]->s1 == 1 ? 'text-danger' : 'text-info';
+                $res[$i]['away_text'] = $odds[$key]->s2 == 1 ? 'text-danger' : 'text-info';
+
+                $i++;
+            }
         }
 
         return $res;
@@ -129,7 +232,7 @@ class Odds extends Model
         }
 
         try{
-            $curl = new Curl("123.59.67.6", "/api/index.php", "POST", 80, true);
+            $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
             $curl->setData($post_data);
             return $curl->execute()->getResponseText();
         }
@@ -146,21 +249,50 @@ class Odds extends Model
             "fid"    => $fid,
             "t"      => 2,
             "c_key"  => "efff0a84f860ff38fe8f5abfa0a68496",
-            "cid"    => 651,
+            "cid"    => 9,
+            //9 易胜博
+            //651 利己
+            //16  10BET
             "c_id"   => 40020,
             "c_type" => 2,
             "c_cpid" => 2,
             "suid"	 => "51135b8f9224fabfe13e8ff68d18729c",
-            "quid"   => 238952
         ];
 
         try{
-            $curl = new Curl("123.59.67.6", "/api/index.php", "POST", 80, true);
+            $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
             $curl->setData($post_data);
             self::$LIJI_ODD = $curl->execute()->getResponseText();
-            $post_data['cid'] = 16;
+            $post_data['cid'] = 651;
             $curl->setData($post_data);
             self::$BET_ODD = $curl->execute()->getResponseText();
+            $curl->close();
+        }
+        catch(\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    public static function matchRank($fid)
+    {
+        $post_data = [
+            "fid"    => $fid,
+            "c_key"  => "541ba457d67da316c6acbbd1e57004f5",
+            "quid"   => 238952,
+            //9 易胜博
+            //651 利己
+            //16  10BET
+            "c_id"   => 41101,
+            "c_type" => 2,
+            "c_cpid" => 2,
+            "suid"	 => "51135b8f9224fabfe13e8ff68d18729c",
+        ];
+
+        try{
+            $curl = new Curl("106.75.147.59", "/api/index.php", "POST", 80, true);
+            $curl->setData($post_data);
+            self::$MATCH_RANK = $curl->execute()->getResponseText();
             $curl->close();
         }
         catch(\Exception $e)
@@ -238,6 +370,86 @@ class Odds extends Model
         }
 
         return $odds;
+    }
+
+    public static function sameBet($target, $sames)
+    {
+        $home   = $target->b_home;
+        $away   = $target->b_away;
+        $handi  = $target->b_handi;
+
+        foreach($sames as $key => $same)
+        {
+            if(abs(number_format(floatval($same->b_home) / floatval($same->b_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->b_handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->b_away) / floatval($same->b_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->b_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->b_away, $same->b_home)) && $same->b_handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
+
+    public static function sameLji($target, $sames)
+    {
+        $home   = $target->l_home;
+        $away   = $target->l_away;
+        $handi  = $target->l_handi;
+
+        foreach($sames as $key => $same)
+        {
+            if(abs(number_format(floatval($same->l_home) / floatval($same->l_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->l_handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->l_away) / floatval($same->l_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->l_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->l_away, $same->l_home)) && $same->l_handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
+
+    public static function sameSim($target, $sames)
+    {
+        $home   = $target->s_home;
+        $away   = $target->s_away;
+        $handi  = $target->s_handi;
+
+        foreach($sames as $key => $same)
+        {
+            if(abs(number_format(floatval($same->s_home) / floatval($same->s_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->s_handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->s_away) / floatval($same->s_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->s_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->s_away, $same->s_home)) && $same->s_handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
+
+
+    private static function getByte($home, $away)
+    {
+        return floatval($home) > floatval($away) ? 0.085 : 0.060;
+    }
+
+    private static function compare($home, $away)
+    {
+        return floatval($home) > floatval($away) ? true : false;
     }
 }
 
