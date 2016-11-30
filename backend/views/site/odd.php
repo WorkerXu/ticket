@@ -423,8 +423,9 @@ $this->title = 'Odd';
                 [
                     'label' => '主队',
                     'value' => function($model){
-                        return $model->home;
+                        return (!substr_compare($model->match->hname, $model->home, 0, 2) ? "<label class='text-danger'>$model->home</label>" : $model->home);
                     },
+                    'format' => 'raw',
                     'headerOptions' => [
                         'width' => '200'
                     ],
@@ -441,8 +442,9 @@ $this->title = 'Odd';
                 [
                     'label' => '客队',
                     'value' => function($model){
-                        return $model->away;
+                        return (!substr_compare($model->match->hname, $model->away, 0, 2) ? "<label class='text-danger'>$model->away</label>" : $model->away);
                     },
+                    'format' => 'raw',
                     'headerOptions' => [
                         'width' => '200'
                     ],
@@ -560,8 +562,9 @@ $this->title = 'Odd';
                 [
                     'label' => '主队',
                     'value' => function($model){
-                        return $model->home;
+                        return (!substr_compare($model->match->aname, $model->home, 0, 2) ? "<label class='text-danger'>$model->home</label>" : $model->home);
                     },
+                    'format' => 'raw',
                     'headerOptions' => [
                         'width' => '200'
                     ],
@@ -578,8 +581,9 @@ $this->title = 'Odd';
                 [
                     'label' => '客队',
                     'value' => function($model){
-                        return $model->away;
+                        return (!substr_compare($model->match->aname, $model->away, 0, 2) ? "<label class='text-danger'>$model->away</label>" : $model->away);
                     },
+                    'format' => 'raw',
                     'headerOptions' => [
                         'width' => '200'
                     ],
