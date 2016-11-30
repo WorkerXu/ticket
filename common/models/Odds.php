@@ -1,6 +1,7 @@
 <?php
 namespace common\models;
 
+use Yii;
 use yii\base\Model;
 use common\helpers\Curl;
 use yii\helpers\ArrayHelper;
@@ -322,7 +323,7 @@ class Odds extends Model
                     {
                         break;
                     }
-                    elseif ($match->isjczq !== $params['type'])
+                    elseif ($match->isjczq != $params['type'])
                     {
                         unset($list[$key]);
                     }
@@ -380,6 +381,11 @@ class Odds extends Model
 
         foreach($sames as $key => $same)
         {
+            if ($same->b_home == '0' || $same->b_away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
             if(abs(number_format(floatval($same->b_home) / floatval($same->b_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->b_handi == $handi)
             {
                 continue;
@@ -403,6 +409,11 @@ class Odds extends Model
 
         foreach($sames as $key => $same)
         {
+            if ($same->l_home == '0' || $same->l_away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
             if(abs(number_format(floatval($same->l_home) / floatval($same->l_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->l_handi == $handi)
             {
                 continue;
@@ -426,6 +437,11 @@ class Odds extends Model
 
         foreach($sames as $key => $same)
         {
+            if ($same->s_home == '0' || $same->s_away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
             if(abs(number_format(floatval($same->s_home) / floatval($same->s_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->s_handi == $handi)
             {
                 continue;
@@ -450,6 +466,219 @@ class Odds extends Model
     private static function compare($home, $away)
     {
         return floatval($home) > floatval($away) ? true : false;
+    }
+
+    public static function getMatch($data)
+    {
+        $res = array();
+
+        if(isset($data['fid']))
+        {
+            $res['fid']   = $data['fid'];
+            $res['mdate'] = $data['vsdate'];
+            $res['hname'] = $data['hname'];
+            $res['aname'] = $data['aname'];
+            $res['score'] = $data['hscore']. ":" .$data['ascore'];
+        }
+
+        return $res;
+    }
+
+    public static function getMatchObj($data)
+    {
+        $res = array();
+
+        if(isset($data->fid))
+        {
+            $res['fid']   = $data->fid;
+            $res['mdate'] = $data->vsdate;
+            $res['hname'] = $data->hname;
+            $res['aname'] = $data->aname;
+            $res['score'] = $data->hscore. ":" .$data->ascore;
+        }
+
+        return $res;
+    }
+
+    public static function store($match)
+    {
+        ini_set ('memory_limit', '512M');
+        try
+        {
+            $transaction = Yii::$app->getDb()->beginTransaction();
+
+            $exist = Match::findOne(['fid' => $match['fid']]);
+
+            if(!is_null($exist))
+            {
+                if(!$exist->delete())
+                {
+                    throw new \Exception('match fail delete');
+                }
+            }
+
+            $model = new Match();
+            $model->isNewRecord == true;
+
+            $model->setAttributes($match);
+
+            if($model->save())
+            {
+                Odds::matchOdd($model->fid, $model->mdate);
+
+                $bet_odd = Odds::getData(Odds::getBetOdd());
+                $bet_odd = Odds::getOdd($bet_odd, "bet");
+
+                foreach($bet_odd as $bet)
+                {
+                    $odd = new Odd();
+                    $odd->setAttributes($bet);
+                    $odd->match_id = $model->id;
+                    if(!$odd->save()){
+                        throw new \Exception('bet fail insert odd');
+                    }
+                }
+
+                $lji_odd = Odds::getData(Odds::getLijiOdd());
+                $lji_odd = Odds::getOdd($lji_odd, "lji");
+
+                foreach($lji_odd as $lji)
+                {
+                    $odd = new Odd();
+                    $odd->setAttributes($lji);
+                    $odd->match_id = $model->id;
+                    if(!$odd->save()){
+                        throw new \Exception('lji fail insert odd');
+                    }
+                }
+
+                $same = new OddSame();
+                $same->b_home = isset($model->getBetFirstOdd()['home']) ? $model->getBetFirstOdd()['home'] : '0';
+                $same->b_away = isset($model->getBetFirstOdd()['away']) ? $model->getBetFirstOdd()['away'] : '0';
+                $same->b_handi = isset($model->getBetFirstOdd()['odd']) ? $model->getBetFirstOdd()['odd'] : '0';
+                $same->l_away = isset($model->getLjiFirstOdd()['away']) ? $model->getLjiFirstOdd()['away'] : '0';
+                $same->l_home = isset($model->getLjiFirstOdd()['home']) ? $model->getLjiFirstOdd()['home'] : '0';
+                $same->l_handi = isset($model->getLjiFirstOdd()['odd']) ? $model->getLjiFirstOdd()['odd'] : '0';
+                $same->s_away = isset($model->getBetSameLjiOdd()['away']) ? $model->getBetSameLjiOdd()['away'] : '0';
+                $same->s_handi = isset($model->getBetSameLjiOdd()['odd']) ? $model->getBetSameLjiOdd()['odd'] : '0';
+                $same->s_home = isset($model->getBetSameLjiOdd()['home']) ? $model->getBetSameLjiOdd()['home'] : '0';
+                $same->match_id = $model->id;
+
+                if(!$same->save())
+                {
+                    throw new \Exception('same fail insert odd');
+                }
+
+                $transaction->commit();
+
+                try{
+                    Odds::matchRank($model->fid);
+
+                    $ranks = Odds::getData(Odds::getMatchRank());
+                    $home_rank = Odds::getRank($ranks, "home");
+                    $rank = new Rank();
+                    $rank->match_id = $model->id;
+                    $rank->setAttributes($home_rank);
+                    $rank->save();
+
+                    $away_rank = Odds::getRank($ranks, "away");
+                    $rank = new Rank();
+                    $rank->match_id = $model->id;
+                    $rank->setAttributes($away_rank);
+                    $rank->save();
+                }catch (\Exception $e) {
+                    //...
+                }
+
+                try{
+                    Odds::matchRank($model->fid);
+                    $ranks = Odds::getData(Odds::getMatchRank());
+
+                    $fucks = Odds::getDetail($ranks, 'fuck');
+
+                    foreach ($fucks as $fuck)
+                    {
+                        $detail = new Detail();
+                        $detail->match_id = $model->id;
+                        $detail->setAttributes($fuck);
+                        $detail->save();
+                    }
+
+                    $homes = Odds::getDetail($ranks, 'home');
+
+                    foreach ($homes as $home)
+                    {
+                        $detail = new Detail();
+                        $detail->match_id = $model->id;
+                        $detail->setAttributes($home);
+                        $detail->save();
+                    }
+
+                    $aways = Odds::getDetail($ranks, 'away');
+
+                    foreach ($aways as $away)
+                    {
+                        $detail = new Detail();
+                        $detail->match_id = $model->id;
+                        $detail->setAttributes($away);
+                        $detail->save();
+                    }
+                }catch (\Exception $e)
+                {
+                    //...
+                }
+
+                try{
+                    Odds::matchRank($model->fid);
+                    $ranks = Odds::getData(Odds::getMatchRank());
+
+                    $fuck = Odds::getTotal($ranks, 'fuck');
+                    $total = new Total();
+                    $total->match_id = $model->id;
+                    $total->setAttributes($fuck);
+                    $total->save();
+
+                    $home = Odds::getTotal($ranks, 'home');
+                    $total = new Total();
+                    $total->match_id = $model->id;
+                    $total->setAttributes($home);
+                    $total->save();
+
+                    $away = Odds::getTotal($ranks, 'away');
+                    $total = new Total();
+                    $total->match_id = $model->id;
+                    $total->setAttributes($away);
+                    $total->save();
+                }catch (\Exception $e)
+                {
+                    //...
+                }
+
+                try{
+                    Odds::matchRank($model->fid);
+                    $ranks = Odds::getData(Odds::getMatchRank());
+
+                    $home = Odds::getPower($ranks, 'h');
+                    $power = new Power();
+                    $power->match_id = $model->id;
+                    $power->setAttributes($home);
+                    $power->save();
+
+                    $away = Odds::getPower($ranks, 'a');
+                    $power = new Power();
+                    $power->match_id = $model->id;
+                    $power->setAttributes($away);
+                    $power->save();
+                }catch (\Exception $e)
+                {
+                    //...
+                }
+            }
+        }catch (\Exception $e){
+
+            $transaction->rollBack();
+            var_dump($e->getMessage());exit();
+        }
     }
 }
 

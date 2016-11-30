@@ -68,19 +68,15 @@ $this->title = 'Match';
                     [
                         'label' => '操作',
                         'value' => function($data){
+                            $tip = is_null(\common\models\Match::findOne(["fid" => $data->fid])) ? 'btn-warning' : 'btn-primary';
                             return(
                                 \yii\helpers\Html::a('盘路走势', ['odd', 'fid' => $data->fid, 'date' => $data->vsdate], ['class' => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])."&nbsp&nbsp".
                                 \yii\helpers\Html::a('数据库存储', ['mysql-odd', 'fid' => $data->fid], ['class' => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])."&nbsp&nbsp".
                                 \yii\helpers\Html::a('相似盘路', ['similar', 'fid' => $data->fid], ['class' => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])."&nbsp&nbsp".
                                 \yii\helpers\Html::a('加入数据库', [
                                     'store',
-                                    'fid'    => $data->fid,
-                                    'mdate'  => $data->vsdate,
-                                    'hname'  => $data->hname,
-                                    'aname'  => $data->aname,
-                                    'hscore' => $data->hscore,
-                                    'ascore' => $data->ascore,
-                                ], ['class'  => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])
+                                    'data'   => $data
+                                ], ['class'  => 'btn-sm '.$tip, 'style' => 'text-decoration:none', 'target' => '_blank'])
                             );
                         },
                         'format' => 'raw',

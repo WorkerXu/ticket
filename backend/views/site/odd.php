@@ -106,7 +106,7 @@ $this->title = 'Odd';
                 ],
             ],
             'summary' => false,
-            'headerRowOptions' => ['class' => 'bg-danger'],
+            'headerRowOptions' => ['class' => 'bg-success'],
         ]);
         ?>
     </div>
@@ -184,7 +184,7 @@ $this->title = 'Odd';
                     ],
                 ],
                 'summary' => false,
-                'headerRowOptions' => ['class' => 'bg-danger'],
+                'headerRowOptions' => ['class' => 'bg-success'],
             ]);
             ?>
         </div>

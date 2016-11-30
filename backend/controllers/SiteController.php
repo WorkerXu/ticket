@@ -1,15 +1,8 @@
 <?php
 namespace backend\controllers;
 
-use common\models\Detail;
-use common\models\Odd;
 use common\models\OddSame;
-use common\models\Power;
-use common\models\Rank;
-use common\models\Total;
 use Yii;
-use yii\base\Model;
-use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\web\Controller;
 use common\models\Odds;
@@ -33,13 +26,8 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['login', 'error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank'],
+                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank'],
                         'allow' => true,
-                    ],
-                    [
-                        'actions' => ['logout', 'index'],
-                        'allow' => true,
-                        'roles' => ['@'],
                     ],
                 ],
             ],
@@ -62,49 +50,6 @@ class SiteController extends Controller
                 'class' => 'yii\web\ErrorAction',
             ],
         ];
-    }
-
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
-    public function actionIndex()
-    {
-        return $this->render('index');
-    }
-
-    /**
-     * Login action.
-     *
-     * @return string
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        } else {
-            return $this->render('login', [
-                'model' => $model,
-            ]);
-        }
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return string
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
     }
 
     public function actionOdd()
@@ -224,186 +169,11 @@ class SiteController extends Controller
 
     public function actionStore()
     {
-        ini_set ('memory_limit', '512M');
-        try
+        $match = Odds::getMatch(Yii::$app->request->get('data'));
+
+        if(!empty($match))
         {
-            $transaction = Yii::$app->getDb()->beginTransaction();
-
-            $exist = Match::findOne(['fid' => Yii::$app->request->get('fid')]);
-
-            if(!is_null($exist))
-            {
-                if(!$exist->delete())
-                {
-                    throw new \Exception('match fail delete');
-                }
-            }
-
-            $model = new Match();
-            $model->isNewRecord == true;
-
-            $model->fid   = Yii::$app->request->get('fid');
-            $model->hname = Yii::$app->request->get('hname');
-            $model->aname = Yii::$app->request->get('aname');
-            $model->score = Yii::$app->request->get('hscore'). ":" .Yii::$app->request->get('ascore');
-            $model->mdate = Yii::$app->request->get('mdate');
-
-            if($model->save())
-            {
-                Odds::matchOdd($model->fid, $model->mdate);
-
-                $bet_odd = Odds::getData(Odds::getBetOdd());
-                $bet_odd = Odds::getOdd($bet_odd, "bet");
-
-                foreach($bet_odd as $bet)
-                {
-                    $odd = new Odd();
-                    $odd->setAttributes($bet);
-                    $odd->match_id = $model->id;
-                    if(!$odd->save()){
-                        throw new \Exception('bet fail insert odd');
-                    }
-                }
-
-                $lji_odd = Odds::getData(Odds::getLijiOdd());
-                $lji_odd = Odds::getOdd($lji_odd, "lji");
-
-                foreach($lji_odd as $lji)
-                {
-                    $odd = new Odd();
-                    $odd->setAttributes($lji);
-                    $odd->match_id = $model->id;
-                    if(!$odd->save()){
-                        throw new \Exception('lji fail insert odd');
-                    }
-                }
-
-                $same = new OddSame();
-                $same->b_home = isset($model->getBetFirstOdd()['home']) ? $model->getBetFirstOdd()['home'] : '';
-                $same->b_away = isset($model->getBetFirstOdd()['away']) ? $model->getBetFirstOdd()['away'] : '';
-                $same->b_handi = isset($model->getBetFirstOdd()['odd']) ? $model->getBetFirstOdd()['odd'] : '';
-                $same->l_away = isset($model->getLjiFirstOdd()['away']) ? $model->getLjiFirstOdd()['away'] : '';
-                $same->l_home = isset($model->getLjiFirstOdd()['home']) ? $model->getLjiFirstOdd()['home'] : '';
-                $same->l_handi = isset($model->getLjiFirstOdd()['odd']) ? $model->getLjiFirstOdd()['odd'] : '';
-                $same->s_away = isset($model->getBetSameLjiOdd()['away']) ? $model->getBetSameLjiOdd()['away'] : '';
-                $same->s_handi = isset($model->getBetSameLjiOdd()['odd']) ? $model->getBetSameLjiOdd()['odd'] : '';
-                $same->s_home = isset($model->getBetSameLjiOdd()['home']) ? $model->getBetSameLjiOdd()['home'] : '';
-                $same->match_id = $model->id;
-
-                if(!$same->save())
-                {
-                    throw new \Exception('same fail insert odd');
-                }
-
-                $transaction->commit();
-
-                try{
-                    Odds::matchRank($model->fid);
-
-                    $ranks = Odds::getData(Odds::getMatchRank());
-                    $home_rank = Odds::getRank($ranks, "home");
-                    $rank = new Rank();
-                    $rank->match_id = $model->id;
-                    $rank->setAttributes($home_rank);
-                    $rank->save();
-
-                    $away_rank = Odds::getRank($ranks, "away");
-                    $rank = new Rank();
-                    $rank->match_id = $model->id;
-                    $rank->setAttributes($away_rank);
-                    $rank->save();
-                }catch (\Exception $e) {
-                    //...
-                }
-
-                try{
-                    Odds::matchRank($model->fid);
-                    $ranks = Odds::getData(Odds::getMatchRank());
-
-                    $fucks = Odds::getDetail($ranks, 'fuck');
-
-                    foreach ($fucks as $fuck)
-                    {
-                        $detail = new Detail();
-                        $detail->match_id = $model->id;
-                        $detail->setAttributes($fuck);
-                        $detail->save();
-                    }
-
-                    $homes = Odds::getDetail($ranks, 'home');
-
-                    foreach ($homes as $home)
-                    {
-                        $detail = new Detail();
-                        $detail->match_id = $model->id;
-                        $detail->setAttributes($home);
-                        $detail->save();
-                    }
-
-                    $aways = Odds::getDetail($ranks, 'away');
-
-                    foreach ($aways as $away)
-                    {
-                        $detail = new Detail();
-                        $detail->match_id = $model->id;
-                        $detail->setAttributes($away);
-                        $detail->save();
-                    }
-                }catch (\Exception $e)
-                {
-                    //...
-                }
-
-                try{
-                    Odds::matchRank($model->fid);
-                    $ranks = Odds::getData(Odds::getMatchRank());
-
-                    $fuck = Odds::getTotal($ranks, 'fuck');
-                    $total = new Total();
-                    $total->match_id = $model->id;
-                    $total->setAttributes($fuck);
-                    $total->save();
-
-                    $home = Odds::getTotal($ranks, 'home');
-                    $total = new Total();
-                    $total->match_id = $model->id;
-                    $total->setAttributes($home);
-                    $total->save();
-
-                    $away = Odds::getTotal($ranks, 'away');
-                    $total = new Total();
-                    $total->match_id = $model->id;
-                    $total->setAttributes($away);
-                    $total->save();
-                }catch (\Exception $e)
-                {
-                    //...
-                }
-
-                try{
-                    Odds::matchRank($model->fid);
-                    $ranks = Odds::getData(Odds::getMatchRank());
-
-                    $home = Odds::getPower($ranks, 'h');
-                    $power = new Power();
-                    $power->match_id = $model->id;
-                    $power->setAttributes($home);
-                    $power->save();
-
-                    $away = Odds::getPower($ranks, 'a');
-                    $power = new Power();
-                    $power->match_id = $model->id;
-                    $power->setAttributes($away);
-                    $power->save();
-                }catch (\Exception $e)
-                {
-                    //...
-                }
-            }
-        }catch (\Exception $e){
-
-            $transaction->rollBack();
-            var_dump($e->getMessage());exit();
+            Odds::store($match);
         }
 
         $this->redirect("match");
@@ -434,9 +204,27 @@ class SiteController extends Controller
         ini_set ('memory_limit', '512M');
         ini_set('max_execution_time', '0');
 
-        foreach (Match::find()->all() as $match)
+        $begin  = "";
+        $end    = "";
+
+        $list = Odds::getData(Odds::matchList(Yii::$app->request->get('day', 1)));
+        if(isset($list->list))
         {
-            //....
+            $list = Odds::dealMatch($list->list, ['type' => 2]);
+        }
+
+        foreach ($list as $match)
+        {
+            $data = Odds::getMatchObj($match);
+
+            if(!empty($data))
+            {
+                $new = is_null(Match::findOne(['fid' => $match->fid]));
+                if ($new)
+                {
+                    Odds::store($data);
+                }
+            }
         }
     }
 
