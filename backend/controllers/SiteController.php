@@ -212,7 +212,7 @@ class SiteController extends Controller
         {
             $list = Odds::dealMatch($list->list, ['type' => 2]);
         }
-
+//        var_dump($list);exit();
         foreach ($list as $match)
         {
             $data = Odds::getMatchObj($match);
