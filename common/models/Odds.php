@@ -252,8 +252,8 @@ class Odds extends Model
             "c_key"  => "efff0a84f860ff38fe8f5abfa0a68496",
             "cid"    => 9,
             //9 易胜博
-            //651 利己
             //16  10BET
+            //651 利己
             "c_id"   => 40020,
             "c_type" => 2,
             "c_cpid" => 2,
@@ -264,7 +264,7 @@ class Odds extends Model
             $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
             $curl->setData($post_data);
             self::$LIJI_ODD = $curl->execute()->getResponseText();
-            $post_data['cid'] = 651;
+            $post_data['cid'] = 16;
             $curl->setData($post_data);
             self::$BET_ODD = $curl->execute()->getResponseText();
             $curl->close();
