@@ -26,7 +26,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank'],
+                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp'],
                         'allow' => true,
                     ],
                 ],
@@ -202,10 +202,7 @@ class SiteController extends Controller
     public function actionAddRank()
     {
         ini_set ('memory_limit', '512M');
-        ini_set('max_execution_time', '0');
-
-        $begin  = "";
-        $end    = "";
+        ini_set ('max_execution_time', '0');
 
         $list = Odds::getData(Odds::matchList(Yii::$app->request->get('day', 1)));
         if(isset($list->list))
@@ -228,5 +225,21 @@ class SiteController extends Controller
         }
     }
 
+    //刷数据专用
+    public function actionTmp()
+    {
+        ini_set ('memory_limit', '512M');
+        ini_set ('max_execution_time', '0');
+        $matchs = Match::find()->andWhere(['<', 'mdate', '2016-11-22 16:30:00'])->orderBy(['mdate' => SORT_DESC])->all();
 
+        foreach ($matchs as $match)
+        {
+            $data = $match->attributes;
+            if (!empty($data))
+            {
+                unset($data['id']);
+                Odds::store($data);
+            }
+        }
+    }
 }
