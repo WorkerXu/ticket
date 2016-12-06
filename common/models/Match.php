@@ -2,9 +2,6 @@
 
 namespace common\models;
 
-use MongoDB\Operation\Find;
-use Yii;
-
 /**
  * This is the model class for table "match".
  *
@@ -39,6 +36,7 @@ class Match extends \yii\db\ActiveRecord
             [['mdate'], 'safe'],
             [['hname', 'aname', 'score'], 'string', 'max' => 15],
             [['fid'], 'unique'],
+            [['text'], 'string', 'max' => 255],
             [['id'], 'exist', 'skipOnError' => true, 'targetClass' => Odd::className(), 'targetAttribute' => ['id' => 'match_id']],
         ];
     }
@@ -55,6 +53,7 @@ class Match extends \yii\db\ActiveRecord
             'aname' => 'Aname',
             'score' => 'Score',
             'mdate' => 'Mdate',
+            'text' => 'Text',
         ];
     }
 

@@ -10,6 +10,7 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
 use common\models\Match;
+use yii\web\NotFoundHttpException;
 
 /**
  * Site controller
@@ -26,7 +27,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp'],
+                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp', 'add-text'],
                         'allow' => true,
                     ],
                 ],
@@ -240,6 +241,21 @@ class SiteController extends Controller
                 unset($data['id']);
                 Odds::store($data);
             }
+        }
+    }
+
+    public function actionAddText($id)
+    {
+        $model = Match::findOne(['id' => $id]);
+        if(is_null($model))
+        {
+            throw new NotFoundHttpException('比赛不存在');
+        }
+        if ($model->load(Yii::$app->request->post()) && $model->save())
+        {
+            return $this->redirect('match');
+        }else {
+            return $this->render('add-text', ['model' => $model]);
         }
     }
 }
