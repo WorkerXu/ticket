@@ -8,20 +8,26 @@ use Yii;
  * This is the model class for table "socre".
  *
  * @property integer $id
- * @property integer $socre
+ * @property integer $hsocre
+ * @property integer $asocre
+ * @property integer $ihsocre
+ * @property integer $iasocre
  * @property integer $hmatch
  * @property integer $amatch
  * @property integer $fmatch
  * @property integer $famcth
+ * @property integer $ftmacth
  * @property integer $shmatch
+ * @property integer $ishmatch
  * @property integer $thmatch
+ * @property integer $ithmatch
  * @property integer $samatch
+ * @property integer $isamatch
  * @property integer $tamatch
- * @property integer $match_id
+ * @property integer $itamatch
+ * @property integer $power
  * @property string $text
- * @property integer $isocre
- * @property integer $ihmatch
- * @property integer $iamacth
+ * @property integer $match_id
  *
  * @property Match $match
  */
@@ -41,8 +47,8 @@ class Socre extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['socre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'shmatch', 'thmatch', 'samatch', 'tamatch', 'match_id', 'isocre', 'ihmatch', 'iamacth'], 'integer'],
-            [['socre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'shmatch', 'thmatch', 'samatch', 'tamatch', 'isocre', 'ihmatch', 'iamacth'], 'default', 'value' => 0],
+            [['hsocre', 'asocre', 'ihsocre', 'iasocre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'ftmacth', 'shmatch', 'ishmatch', 'thmatch', 'ithmatch', 'samatch', 'isamatch', 'tamatch', 'itamatch', 'power', 'match_id'], 'integer'],
+            [['hsocre', 'asocre', 'ihsocre', 'iasocre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'ftmacth', 'shmatch', 'ishmatch', 'thmatch', 'ithmatch', 'samatch', 'isamatch', 'tamatch', 'itamatch', 'power'], 'default', 'value' => 0],
             [['match_id'], 'required'],
             [['text'], 'string', 'max' => 255],
             [['match_id'], 'exist', 'skipOnError' => true, 'targetClass' => Match::className(), 'targetAttribute' => ['match_id' => 'id']],
@@ -56,20 +62,26 @@ class Socre extends \yii\db\ActiveRecord
     {
         return [
             'id' => '主键',
-            'socre' => '积分',
+            'hsocre' => '积分',
+            'asocre' => '主客积分',
+            'ihsocre' => '积分状态',
+            'iasocre' => '主客积分状态',
             'hmatch' => '总战绩',
             'amatch' => '主客战绩',
             'fmatch' => '对阵战绩',
             'famcth' => '对阵主客战绩 ',
+            'ftmacth' => '近三场对阵战绩',
             'shmatch' => '近十场战绩',
+            'ishmatch' => '近十场战绩状态',
             'thmatch' => '近三场走势',
+            'ithmatch' => '近三场战绩状态',
             'samatch' => '近十场主客战绩',
+            'isamatch' => '近十场主客战绩状态',
             'tamatch' => '近三场主客走势',
-            'match_id' => 'Match ID',
+            'itamatch' => '近三场主客战绩状态',
+            'power' => '球球实力对比',
             'text' => '描述',
-            'isocre' => '主队积分状态',
-            'ihmatch' => '主队战绩状态',
-            'iamacth' => '主队主客状态',
+            'match_id' => 'Match ID',
         ];
     }
 

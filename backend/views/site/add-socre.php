@@ -17,7 +17,18 @@ use yii\widgets\ActiveForm;
 
     <div class="form-group">
         <div class="col-md-4 text-center">
-            <?= $form->field($model, 'socre')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+            <?= $form->field($model, 'hsocre')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'ihsocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'asocre')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'iasocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
         </div>
         <div class="col-md-4 text-center">
             <?= $form->field($model, 'hmatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
@@ -34,30 +45,43 @@ use yii\widgets\ActiveForm;
             <?= $form->field($model, 'famcth')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
         </div>
         <div class="col-md-4 text-center">
-            <?= $form->field($model, 'shmatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-4 text-center">
-            <?= $form->field($model, 'thmatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
-        </div>
-        <div class="col-md-4 text-center">
-            <?= $form->field($model, 'samatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
-        </div>
-        <div class="col-md-4 text-center">
-            <?= $form->field($model, 'tamatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+            <?= $form->field($model, 'ftmacth')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
         </div>
     </div>
 
     <div class="form-group">
         <div class="col-md-4 text-center">
-            <?= $form->field($model, 'isocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+            <?= $form->field($model, 'shmatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
         </div>
         <div class="col-md-4 text-center">
-            <?= $form->field($model, 'ihmatch')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+            <?= $form->field($model, 'ishmatch')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
         </div>
         <div class="col-md-4 text-center">
-            <?= $form->field($model, 'iamacth')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+            <?= $form->field($model, 'thmatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'ithmatch')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'samatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'isamatch')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'tamatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'itamatch')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'power')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
         </div>
     </div>
 
