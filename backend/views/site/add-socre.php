@@ -20,21 +20,21 @@ use yii\widgets\ActiveForm;
             <?= $form->field($model, 'hsocre')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
         </div>
         <div class="col-md-4 text-center">
-            <?= $form->field($model, 'ihsocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
-        </div>
-        <div class="col-md-4 text-center">
             <?= $form->field($model, 'asocre')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-4 text-center">
-            <?= $form->field($model, 'iasocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
         </div>
         <div class="col-md-4 text-center">
             <?= $form->field($model, 'hmatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
         </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'ihsocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
         <div class="col-md-4 text-center">
             <?= $form->field($model, 'amatch')->radioList(['2' => '优势', '1' => '略优', '0' => '持平', '-1' => '略劣', '-2' => '劣势'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'iasocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
         </div>
     </div>
     <div class="form-group">
