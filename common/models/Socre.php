@@ -50,7 +50,7 @@ class Socre extends \yii\db\ActiveRecord
             [['hsocre', 'asocre', 'ihsocre', 'iasocre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'ftmacth', 'shmatch', 'ishmatch', 'thmatch', 'ithmatch', 'samatch', 'isamatch', 'tamatch', 'itamatch', 'power', 'match_id'], 'integer'],
             [['hsocre', 'asocre', 'ihsocre', 'iasocre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'ftmacth', 'shmatch', 'ishmatch', 'thmatch', 'ithmatch', 'samatch', 'isamatch', 'tamatch', 'itamatch', 'power'], 'default', 'value' => 0],
             [['match_id'], 'required'],
-            [['text'], 'string', 'max' => 255],
+            [['text'], 'string', 'max' => 1024],
             [['match_id'], 'exist', 'skipOnError' => true, 'targetClass' => Match::className(), 'targetAttribute' => ['match_id' => 'id']],
         ];
     }
