@@ -46,7 +46,7 @@ $this->title = 'Similar';
                     'value' => function($data){
                         return(
                             \yii\helpers\Html::a('盘路走势', ['mysql-odd', 'fid' => $data->match->fid], ['class' => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])."&nbsp&nbsp".
-                            \yii\helpers\Html::a('盘路笔记', ['add-text', 'id' => $data->match->id], ['class' => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])
+                            \yii\helpers\Html::a('盘路笔记', ['add-socre', 'id' => $data->match->id], ['class' => 'btn-sm btn-primary', 'style' => 'text-decoration:none', 'target' => '_blank'])
                         );
                     },
                     'format' => 'raw',

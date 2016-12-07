@@ -152,4 +152,12 @@ class Match extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Power::className(), ['match_id' => 'id']);
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSocre()
+    {
+        return $this->hasOne(Socre::className(), ['match_id' => 'id']);
+    }
 }

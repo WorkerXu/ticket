@@ -2,6 +2,7 @@
 namespace backend\controllers;
 
 use common\models\OddSame;
+use common\models\Socre;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\web\Controller;
@@ -27,7 +28,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp', 'add-text'],
+                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp', 'add-socre'],
                         'allow' => true,
                     ],
                 ],
@@ -244,18 +245,20 @@ class SiteController extends Controller
         }
     }
 
-    public function actionAddText($id)
+    public function actionAddSocre($id)
     {
         $model = Match::findOne(['id' => $id]);
         if(is_null($model))
         {
             throw new NotFoundHttpException('比赛不存在');
         }
-        if ($model->load(Yii::$app->request->post()) && $model->save())
+        $socre = is_null($model->socre) ? new Socre() : $model->socre;
+        $socre->match_id = $id;
+        if ($socre->load(Yii::$app->request->post()) && $socre->save())
         {
             return $this->redirect('match');
         }else {
-            return $this->render('add-text', ['model' => $model]);
+            return $this->render('add-socre', ['model' => $socre]);
         }
     }
 }
