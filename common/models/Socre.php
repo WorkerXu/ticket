@@ -19,6 +19,9 @@ use Yii;
  * @property integer $tamatch
  * @property integer $match_id
  * @property string $text
+ * @property integer $isocre
+ * @property integer $ihmatch
+ * @property integer $iamacth
  *
  * @property Match $match
  */
@@ -38,8 +41,8 @@ class Socre extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['socre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'shmatch', 'thmatch', 'samatch', 'tamatch', 'match_id'], 'integer'],
-            [['socre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'shmatch', 'thmatch', 'samatch', 'tamatch'], 'default', 'value' => 0],
+            [['socre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'shmatch', 'thmatch', 'samatch', 'tamatch', 'match_id', 'isocre', 'ihmatch', 'iamacth'], 'integer'],
+            [['socre', 'hmatch', 'amatch', 'fmatch', 'famcth', 'shmatch', 'thmatch', 'samatch', 'tamatch', 'isocre', 'ihmatch', 'iamacth'], 'default', 'value' => 0],
             [['match_id'], 'required'],
             [['text'], 'string', 'max' => 255],
             [['match_id'], 'exist', 'skipOnError' => true, 'targetClass' => Match::className(), 'targetAttribute' => ['match_id' => 'id']],
@@ -64,6 +67,9 @@ class Socre extends \yii\db\ActiveRecord
             'tamatch' => '近三场主客走势',
             'match_id' => 'Match ID',
             'text' => '描述',
+            'isocre' => '主队积分状态',
+            'ihmatch' => '主队战绩状态',
+            'iamacth' => '主队主客状态',
         ];
     }
 

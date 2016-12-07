@@ -50,6 +50,18 @@ use yii\widgets\ActiveForm;
     </div>
 
     <div class="form-group">
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'isocre')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'ihmatch')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+        <div class="col-md-4 text-center">
+            <?= $form->field($model, 'iamacth')->radioList(['2' => '很好', '1' => '略好', '0' => '一般', '-1' => '略差', '-2' => '很差'])?>
+        </div>
+    </div>
+
+    <div class="form-group">
         <div class="col-md-12 text-center">
             <?= $form->field($model, 'text')->textarea(['rows' => 15])?>
         </div>
