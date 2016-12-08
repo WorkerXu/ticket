@@ -695,7 +695,7 @@ class Odds extends Model
             {
                 return ($diff < 0) ? -1 : 1;
             }
-            elseif (abs($diff) < (1.5 * $sum))
+            elseif (abs($diff) <= round(1.5 * $sum))
             {
                 return ($diff < 0) ? -2 : 2;
             }
