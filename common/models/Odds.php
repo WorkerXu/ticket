@@ -680,5 +680,30 @@ class Odds extends Model
             var_dump($e->getMessage());exit();
         }
     }
+
+    public static function calSocre($hsocre, $asocre, $sum)
+    {
+        $diff = ($hsocre - $asocre);
+
+        if($diff == 0)
+        {
+            return 0;
+        }
+        else
+        {
+            if (abs($diff) < (1 * $sum))
+            {
+                return ($diff < 0) ? -1 : 1;
+            }
+            elseif (abs($diff) < (1.5 * $sum))
+            {
+                return ($diff < 0) ? -2 : 2;
+            }
+            else
+            {
+                return ($diff < 0) ? -3 : 3;
+            }
+        }
+    }
 }
 

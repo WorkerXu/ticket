@@ -93,6 +93,7 @@ use yii\widgets\ActiveForm;
 
     <div class="form-group">
         <?= Html::submitButton('添加', ['class' => 'btn btn-success']) ?>
+        <?= Html::a('自动生成', ['cal-socre', 'id' => $id], ['class' => 'btn btn-primary', 'style' => 'text-decoration:none'])?>
     </div>
 
     <?php ActiveForm::end(); ?>

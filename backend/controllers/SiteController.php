@@ -1,6 +1,9 @@
 <?php
 namespace backend\controllers;
 
+use common\helpers\Curl;
+use common\models\Cal;
+use common\models\Odd;
 use common\models\OddSame;
 use common\models\Socre;
 use Yii;
@@ -28,7 +31,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp', 'add-socre'],
+                        'actions' => ['error', 'odd', 'match', 'store', 'mysql-odd', 'similar', 'add-rank', 'tmp', 'add-socre', 'cal-socre'],
                         'allow' => true,
                     ],
                 ],
@@ -258,7 +261,50 @@ class SiteController extends Controller
         {
             return $this->redirect('match');
         }else {
-            return $this->render('add-socre', ['model' => $socre]);
+            return $this->render('add-socre', [
+                'model' => $socre,
+                'id' => $id,
+            ]);
+        }
+    }
+
+    public function actionCalSocre($id)
+    {
+        $model = Match::findOne(['id' => $id]);
+        if(is_null($model))
+        {
+            throw new NotFoundHttpException('比赛不存在');
+        }
+        $socre = is_null($model->socre) ? new Socre() : $model->socre;
+        $cal = new Cal();
+
+        if($cal->load(Yii::$app->request->post()))
+        {
+            $socre->hsocre = Odds::calSocre($cal->hscore, $cal->ascore, $cal->hsum);
+            $socre->asocre = Odds::calSocre($cal->hasocre, $cal->aasocre, $cal->asum);
+            $socre->ihsocre = Odds::calSocre(3*$cal->hmatchw, (1*$cal->hmatchd + 3*$cal->hmatchl), ($cal->hmatchw + $cal->hmatchd + $cal->hmatchl));
+            $socre->iasocre = Odds::calSocre(3*$cal->hamatchw, (1*$cal->hamatchd + 3*$cal->hamatchl), ($cal->hamatchw + $cal->hamatchd + $cal->hamatchl));
+            $socre->hmatch = Odds::calSocre(3*$cal->hmatchw, (1*$cal->amatchd + 3*$cal->amatchw), ($cal->hmatchw + $cal->hmatchd + $cal->hmatchl));
+            $socre->amatch = Odds::calSocre(3*$cal->hamatchw, (1*$cal->aamatchd + 3*$cal->aamatchw), ($cal->hamatchw + $cal->hamatchd + $cal->hamatchl));
+            $socre->fmatch = Odds::calSocre(3*$cal->fw, (1*$cal->fd + 3*$cal->fl), ($cal->fw + $cal->fd + $cal->fl));
+            $socre->famcth = Odds::calSocre(3*$cal->fhw, (1*$cal->fhd + 3*$cal->fhl), ($cal->fhw + $cal->fhd + $cal->fhl));
+            $socre->ftmacth = Odds::calSocre(3*$cal->fsw, (1*$cal->fsd + 3*$cal->fsl), ($cal->fsw + $cal->fsd + $cal->fsl));
+            $socre->shmatch = Odds::calSocre(3*$cal->hjw, (1*$cal->ajd + 3*$cal->ajw), ($cal->hjw + $cal->hjd + $cal->hjl));
+            $socre->ishmatch = Odds::calSocre(3*$cal->hjw, (1*$cal->hjd + 3*$cal->hjl), ($cal->hjw + $cal->hjd + $cal->hjl));
+            $socre->thmatch = Odds::calSocre(3*$cal->hjsw, (1*$cal->ajsd + 3*$cal->ajsw), ($cal->hjsw + $cal->hjsd + $cal->hjsl));
+            $socre->ithmatch = Odds::calSocre(3*$cal->hjsw, (1*$cal->hjsd + 3*$cal->hjsl), ($cal->hjsw + $cal->hjsd + $cal->hjsl));
+            $socre->samatch = Odds::calSocre(3*$cal->hajw, (1*$cal->aajd + 3*$cal->aajw), ($cal->hajw + $cal->hajd + $cal->hajl));
+            $socre->isamatch = Odds::calSocre(3*$cal->hajw, (1*$cal->hajd + 3*$cal->hajl), ($cal->hajw + $cal->hajd + $cal->hajl));
+            $socre->samatch = Odds::calSocre(3*$cal->hajw, (1*$cal->aajd + 3*$cal->aajw), ($cal->hajw + $cal->hajd + $cal->hajl));
+            $socre->isamatch = Odds::calSocre(3*$cal->hajw, (1*$cal->hajd + 3*$cal->hajl), ($cal->hajw + $cal->hajd + $cal->hajl));
+            $socre->tamatch = Odds::calSocre(3*$cal->hajsw, (1*$cal->aajsd + 3*$cal->aajsw), ($cal->hajsw + $cal->hajsd + $cal->hajsl));
+            $socre->itamatch =  Odds::calSocre(3*$cal->hajsw, (1*$cal->hajsd + 3*$cal->hajsl), ($cal->hajsw + $cal->hajsd + $cal->hajsl));
+            $socre->match_id = $id;
+
+            $socre->save();
+            return $this->redirect(['add-socre', 'id' => $id]);
+        }else{
+            return $this->render('cal-socre', ['model' => $cal]);
         }
     }
 }
