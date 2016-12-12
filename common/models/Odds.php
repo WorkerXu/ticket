@@ -16,11 +16,17 @@ class Odds extends Model
 
     private static $BET_ODD;
     private static $LIJI_ODD;
+    private static $AOMEN_ODD;
     private static $MATCH_RANK;
 
     public static function getBetOdd()
     {
         return self::isJson(self::$BET_ODD) ? self::$BET_ODD : '{}';
+    }
+
+    public static function getAOMENOdd()
+    {
+        return self::isJson(self::$AOMEN_ODD) ? self::$AOMEN_ODD : '{}';
     }
 
     public static function getLijiOdd()
@@ -173,18 +179,35 @@ class Odds extends Model
                 {
                     if (isset($lji_odd[$j]) && strtotime($value['time']) < strtotime($lji_odd[$j]['time']))
                     {
+                        $res[$i]['time'] = $lji_odd[$j]['time'];
                         $res[$i][$lji_odd[$j]['tag']] = $lji_odd[$j];
                     }
                     elseif (isset($lji_odd[$j]) && strtotime($value['time']) == strtotime($lji_odd[$j]['time']))
                     {
-                        $res[$i][$value['tag']] = $value;
+                        $res[$i]['time'] = $value['time'];
                         $res[$i][$lji_odd[$j]['tag']] = $lji_odd[$j];
+                        if(isset($value['tag']))
+                        {
+                            $res[$i][$value['tag']] = $value;
+                        }
+                        else
+                        {
+                            $res[$i] = $res[$i] + $value;
+                        }
                         $j++;
                         break;
                     }
                     else
                     {
-                        $res[$i][$value['tag']] = $value;
+                        $res[$i]['time'] = $value['time'];
+                        if(isset($value['tag']))
+                        {
+                            $res[$i][$value['tag']] = $value;
+                        }
+                        else
+                        {
+                            $res[$i] = $value;
+                        }
                         break;
                     }
 
@@ -193,7 +216,15 @@ class Odds extends Model
             }
             else
             {
-                $res[$i][$value['tag']] = $value;
+                $res[$i]['time'] = $value['time'];
+                if(isset($value['tag']))
+                {
+                    $res[$i][$value['tag']] = $value;
+                }
+                else
+                {
+                    $res[$i] = $value;
+                }
             }
             $i++;
         }
@@ -202,6 +233,7 @@ class Odds extends Model
         {
             for ($key = $j; $key < $count; $key++)
             {
+                $res[$i]['time'] = $lji_odd[$key]['time'];
                 $res[$i][$lji_odd[$key]['tag']] = $lji_odd[$key];
                 $i++;
             }
@@ -243,17 +275,25 @@ class Odds extends Model
         }
     }
 
-    public static function matchOdd($fid, $vsdate)
+    /**
+     * @param $fid
+     * @param $vsdate
+     * @param int $lji
+     * @return bool
+     * 9 易胜博
+     * 16  10BET
+     * 651 利己
+     * 502 12BET
+     * 5 澳门
+     */
+    public static function matchOdd($fid, $vsdate, $lji = 9, $bet = 16, $aom = 5)
     {
         $post_data = [
             "vsdate" => $vsdate,
             "fid"    => $fid,
             "t"      => 2,
             "c_key"  => "efff0a84f860ff38fe8f5abfa0a68496",
-            "cid"    => 9,
-            //9 易胜博
-            //16  10BET
-            //651 利己
+            "cid"    => $lji,
             "c_id"   => 40020,
             "c_type" => 2,
             "c_cpid" => 2,
@@ -264,9 +304,12 @@ class Odds extends Model
             $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
             $curl->setData($post_data);
             self::$LIJI_ODD = $curl->execute()->getResponseText();
-            $post_data['cid'] = 16;
+            $post_data['cid'] = $bet;
             $curl->setData($post_data);
             self::$BET_ODD = $curl->execute()->getResponseText();
+            $post_data['cid'] = $aom;
+            $curl->setData($post_data);
+            self::$AOMEN_ODD = $curl->execute()->getResponseText();
             $curl->close();
         }
         catch(\Exception $e)
@@ -452,6 +495,29 @@ class Odds extends Model
             }else{
                 unset($sames[$key]);
             }
+        }
+
+        return $sames;
+    }
+
+    //临时方法
+    public static function sameSocre($target, $sames)
+    {
+        foreach ($sames as $key => $same)
+        {
+            continue;
+            if($same->match->socre->iasocre === $target->socre->iasocre)
+            {
+                if ($same->match->socre->isamatch === $target->socre->isamatch)
+                {
+
+                    if ($same->match->socre->itamatch === $target->socre->itamatch)
+                    {
+
+                    }
+                }
+            }
+            unset($sames[$key]);
         }
 
         return $sames;
@@ -705,5 +771,18 @@ class Odds extends Model
             }
         }
     }
+
+    public static function unsetTime($odds)
+    {
+        foreach ($odds as $key => $odd)
+        {
+            if(isset($odd['time']))
+            {
+                unset($odds[$key]['time']);
+            }
+        }
+        return $odds;
+    }
+
 }
 

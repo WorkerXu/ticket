@@ -61,7 +61,7 @@ class SiteController extends Controller
     {
         $fid = Yii::$app->request->get('fid', 0);
         $date = Yii::$app->request->get('date', date("Y-m-d H:i:s"));
-        Odds::matchOdd($fid, $date);
+        Odds::matchOdd($fid, $date, 9, 502);
 
         $bet_odd = Odds::getData(Odds::getBetOdd());
         $bet_odd = Odds::getOdd($bet_odd, "bet");
@@ -69,7 +69,12 @@ class SiteController extends Controller
         $lji_odd = Odds::getData(Odds::getLijiOdd());
         $lji_odd = Odds::getOdd($lji_odd, "lji");
 
+        $aom_odd = Odds::getData(Odds::getAOMENOdd());
+        $aom_odd = Odds::getOdd($aom_odd, "aom");
+
         $odds = Odds::orderOdd($bet_odd, $lji_odd);
+        $odds = Odds::orderOdd($odds, $aom_odd);
+        $odds = Odds::unsetTime($odds);
         $odds = Odds::calDiff($odds);
         $odds = Odds::addDiffs($odds, "bet", "lji");
         $odds = Odds::addDiffs($odds, "lji", "bet");
@@ -93,6 +98,7 @@ class SiteController extends Controller
         }
 
         $odds = Odds::orderOdd($bet_odd, $lji_odd);
+        $odds = Odds::unsetTime($odds);
         $odds = Odds::calDiff($odds);
         $odds = Odds::addDiffs($odds, "bet", "lji");
         $odds = Odds::addDiffs($odds, "lji", "bet");
@@ -191,6 +197,7 @@ class SiteController extends Controller
         $sames  = Odds::sameBet($target->oddSame, $sames);
         $sames  = Odds::sameLji($target->oddSame, $sames);
         $sames  = Odds::sameSim($target->oddSame, $sames);
+        $sames  = Odds::sameSocre($target, $sames);
 
         $provider = new ArrayDataProvider([
             'allModels' => $sames,
