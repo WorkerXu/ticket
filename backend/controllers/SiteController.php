@@ -63,8 +63,8 @@ class SiteController extends Controller
         $date = Yii::$app->request->get('date', date("Y-m-d H:i:s"));
         Odds::matchOdd($fid, $date, 9, 502);
 
-        $bet_odd = Odds::getData(Odds::getBetOdd());
-        $bet_odd = Odds::getOdd($bet_odd, "bet");
+//        $bet_odd = Odds::getData(Odds::getBetOdd());
+//        $bet_odd = Odds::getOdd($bet_odd, "bet");
 
         $lji_odd = Odds::getData(Odds::getLijiOdd());
         $lji_odd = Odds::getOdd($lji_odd, "lji");
@@ -72,8 +72,8 @@ class SiteController extends Controller
         $aom_odd = Odds::getData(Odds::getAOMENOdd());
         $aom_odd = Odds::getOdd($aom_odd, "aom");
 
-        $odds = Odds::orderOdd($bet_odd, $lji_odd);
-        $odds = Odds::orderOdd($odds, $aom_odd);
+        $odds = Odds::orderOdd($aom_odd, $lji_odd);
+//        $odds = Odds::orderOdd($odds, $aom_odd);
         $odds = Odds::unsetTime($odds);
         $odds = Odds::calDiff($odds);
         $odds = Odds::addDiffs($odds, "bet", "lji");
