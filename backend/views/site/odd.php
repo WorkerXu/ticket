@@ -16,12 +16,12 @@ $this->title = 'Odd';
             </tr>
             <?php foreach ($odds as $odd)
             {
-                $time = isset($odd['bet']['time']) ? $odd['bet']['time'] : (isset($odd['aom']['time']) ? $odd['aom']['time'] : $odd['lji']['time']);
+                $time = isset($odd['bet']['time']) ? $odd['bet']['time'] : $odd['lji']['time'];
             ?>
             <tr>
                 <td><?= date("m-d H:i", strtotime($time));?></td>
-                <td><?= isset($odd['aom']) ? "<label class = '". $odd['aom']['home_text'] ."'>". $odd['aom']['home']. "</label>&nbsp&nbsp&nbsp". $odd['aom']['odd'] ."&nbsp&nbsp&nbsp<label class = '". $odd['aom']['away_text'] ."'>". $odd['aom']['away'] ."</label>" : "- - - -";?></td>
                 <td><?= isset($odd['lji']) ? "<label class = '". $odd['lji']['home_text'] ."'>". $odd['lji']['home']. "</label>&nbsp&nbsp&nbsp". $odd['lji']['odd'] ."&nbsp&nbsp&nbsp<label class = '". $odd['lji']['away_text'] ."'>". $odd['lji']['away'] ."</label>" : "- - - -";?></td>
+                <td><?= isset($odd['bet']) ? "<label class = '". $odd['bet']['home_text'] ."'>". $odd['bet']['home']. "</label>&nbsp&nbsp&nbsp". $odd['bet']['odd'] ."&nbsp&nbsp&nbsp<label class = '". $odd['bet']['away_text'] ."'>". $odd['bet']['away'] ."</label>" : "- - - -";?></td>
             </tr>
             <?php } ?>
         </table>

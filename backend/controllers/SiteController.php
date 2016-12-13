@@ -61,19 +61,15 @@ class SiteController extends Controller
     {
         $fid = Yii::$app->request->get('fid', 0);
         $date = Yii::$app->request->get('date', date("Y-m-d H:i:s"));
-        Odds::matchOdd($fid, $date, 9, 502);
-
-//        $bet_odd = Odds::getData(Odds::getBetOdd());
-//        $bet_odd = Odds::getOdd($bet_odd, "bet");
+        Odds::matchOdd($fid, $date);
 
         $lji_odd = Odds::getData(Odds::getLijiOdd());
         $lji_odd = Odds::getOdd($lji_odd, "lji");
 
-        $aom_odd = Odds::getData(Odds::getAOMENOdd());
-        $aom_odd = Odds::getOdd($aom_odd, "aom");
+        $bet_odd = Odds::getData(Odds::getBetOdd());
+        $bet_odd = Odds::getOdd($bet_odd, "bet");
 
-        $odds = Odds::orderOdd($aom_odd, $lji_odd);
-//        $odds = Odds::orderOdd($odds, $aom_odd);
+        $odds = Odds::orderOdd($bet_odd, $lji_odd);
         $odds = Odds::unsetTime($odds);
         $odds = Odds::calDiff($odds);
         $odds = Odds::addDiffs($odds, "bet", "lji");
@@ -221,7 +217,6 @@ class SiteController extends Controller
         {
             $list = Odds::dealMatch($list->list, ['type' => 2]);
         }
-//        var_dump($list);exit();
         foreach ($list as $match)
         {
             $data = Odds::getMatchObj($match);
@@ -242,17 +237,23 @@ class SiteController extends Controller
     {
         ini_set ('memory_limit', '512M');
         ini_set ('max_execution_time', '0');
-        $matchs = Match::find()->andWhere(['<', 'mdate', '2016-11-22 16:30:00'])->orderBy(['mdate' => SORT_DESC])->all();
+        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-12-10 21:00:00'])->orderBy(['mdate' => SORT_DESC])->all();
 
-        foreach ($matchs as $match)
-        {
-            $data = $match->attributes;
-            if (!empty($data))
+        while (!empty($matchs)){
+            $m = array_splice($matchs, 0, 100);
+            for ($i = 0; $i < count($m); $i++)
             {
-                unset($data['id']);
-                Odds::store($data);
+                $data = $m[$i]->attributes;
+                if (!empty($data))
+                {
+                    unset($data['id']);
+                    Odds::store($data);
+                }
+                unset($data);
             }
+            unset($m);
         }
+        unset($matchs);
     }
 
     public function actionAddSocre($id)

@@ -16,17 +16,11 @@ class Odds extends Model
 
     private static $BET_ODD;
     private static $LIJI_ODD;
-    private static $AOMEN_ODD;
     private static $MATCH_RANK;
 
     public static function getBetOdd()
     {
         return self::isJson(self::$BET_ODD) ? self::$BET_ODD : '{}';
-    }
-
-    public static function getAOMENOdd()
-    {
-        return self::isJson(self::$AOMEN_ODD) ? self::$AOMEN_ODD : '{}';
     }
 
     public static function getLijiOdd()
@@ -286,7 +280,7 @@ class Odds extends Model
      * 502 12BET
      * 5 澳门
      */
-    public static function matchOdd($fid, $vsdate, $lji = 9, $bet = 16, $aom = 5)
+    public static function matchOdd($fid, $vsdate, $lji = 5, $bet = 9)
     {
         $post_data = [
             "vsdate" => $vsdate,
@@ -307,9 +301,6 @@ class Odds extends Model
             $post_data['cid'] = $bet;
             $curl->setData($post_data);
             self::$BET_ODD = $curl->execute()->getResponseText();
-            $post_data['cid'] = $aom;
-            $curl->setData($post_data);
-            self::$AOMEN_ODD = $curl->execute()->getResponseText();
             $curl->close();
         }
         catch(\Exception $e)
