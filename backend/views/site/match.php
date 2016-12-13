@@ -100,8 +100,14 @@ $this->title = 'Match';
                 'columns' => [
                     [
                         'label' => '比赛',
+                        'attribute' => 'vsdate',
                         'value' => function($data){
-                            return date('H:i', strtotime($data->vsdate))."&nbsp:&nbsp".mb_substr($data->lname, 0 ,2);
+                            if (!Yii::$app->request->get('day')){
+                                $fm = 'h:i';
+                            }else{
+                                $fm = 'm-d';
+                            }
+                            return date($fm, strtotime($data->vsdate))."&nbsp:&nbsp".mb_substr($data->lname, 0 ,2);
                         },
                         'format' => 'raw',
                     ],

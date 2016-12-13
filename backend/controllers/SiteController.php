@@ -237,7 +237,7 @@ class SiteController extends Controller
     {
         ini_set ('memory_limit', '512M');
         ini_set ('max_execution_time', '0');
-        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-11-27 03:30:00'])->orderBy(['mdate' => SORT_DESC])->all();
+        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-11-26 21:00:00'])->orderBy(['mdate' => SORT_DESC])->all();
 
         while (!empty($matchs)){
             $m = array_splice($matchs, 0, 100);
