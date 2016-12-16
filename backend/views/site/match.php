@@ -103,7 +103,7 @@ $this->title = 'Match';
                         'attribute' => 'vsdate',
                         'value' => function($data){
                             if (!Yii::$app->request->get('day')){
-                                $fm = 'h:i';
+                                $fm = 'H:i';
                             }else{
                                 $fm = 'm-d';
                             }
