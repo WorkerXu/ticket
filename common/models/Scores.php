@@ -62,4 +62,21 @@ class Scores extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Matchs::className(), ['id' => 'match_id']);
     }
+
+    public function getText($key)
+    {
+        $map = [
+            'homestanding'   => '主队联赛记录',
+            'chomestanding'  => '主队联赛主场',
+            'awaystanding'   => '客队联赛记录',
+            'cawaystanding'  => '客队联赛客场',
+            'home_datatotal' => '主队十场记录',
+            'away_datatotal' => '客队十场记录',
+            'fuck_datatotal' => '主队交战记录',
+            'homes'          => '主队十场主场',
+            'aways'          => '客队十场客场',
+        ];
+
+        return isset($map[$key]) ? $map[$key] : '';
+    }
 }

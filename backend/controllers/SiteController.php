@@ -1,20 +1,16 @@
 <?php
 namespace backend\controllers;
 
-use common\helpers\Curl;
 use common\models\Cal;
-use common\models\Odd;
-use common\models\OddSame;
-use common\models\Socre;
+use common\models\Matchs;
+use common\models\Sames;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\web\Controller;
 use common\models\Odds;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use common\models\LoginForm;
 use common\models\Match;
-use yii\web\NotFoundHttpException;
 
 /**
  * Site controller
@@ -59,96 +55,6 @@ class SiteController extends Controller
         ];
     }
 
-    public function actionOdd()
-    {
-        $fid = Yii::$app->request->get('fid', 0);
-        $date = Yii::$app->request->get('date', date("Y-m-d H:i:s"));
-        Odds::matchOdd($fid, $date);
-
-        $lji_odd = Odds::getData(Odds::getLijiOdd());
-        $lji_odd = Odds::getOdd($lji_odd, "lji");
-
-        $bet_odd = Odds::getData(Odds::getBetOdd());
-        $bet_odd = Odds::getOdd($bet_odd, "bet");
-
-        $odds = Odds::orderOdd($bet_odd, $lji_odd);
-        $odds = Odds::unsetTime($odds);
-        $odds = Odds::calDiff($odds);
-        $odds = Odds::addDiffs($odds, "bet", "lji");
-        $odds = Odds::addDiffs($odds, "lji", "bet");
-
-        return $this->render('odd',
-            [
-                'odds' => $odds,
-            ]
-        );
-    }
-
-    public function actionMysqlOdd()
-    {
-        $bet_odd = $lji_odd = array();
-        $fid = Yii::$app->request->get('fid', 0);
-
-        if($match = Match::findOne(['fid' => $fid]))
-        {
-            $bet_odd = $match->betOdds;
-            $lji_odd = $match->ljiOdds;
-        }
-
-        $odds = Odds::orderOdd($bet_odd, $lji_odd);
-        $odds = Odds::unsetTime($odds);
-        $odds = Odds::calDiff($odds);
-        $odds = Odds::addDiffs($odds, "bet", "lji");
-        $odds = Odds::addDiffs($odds, "lji", "bet");
-
-        $rank_provider = new ArrayDataProvider([
-            'allModels' => $match->ranks,
-        ]);
-
-        $fuck_provider = new ArrayDataProvider([
-            'allModels' => $match->fuckDetails,
-        ]);
-
-        $home_provider = new ArrayDataProvider([
-            'allModels' => $match->homeDetails,
-        ]);
-
-        $away_provider = new ArrayDataProvider([
-            'allModels' => $match->awayDetails,
-        ]);
-
-        $ft_provider = new ArrayDataProvider([
-            'allModels' => $match->fuckTotal,
-        ]);
-
-        $ht_provider = new ArrayDataProvider([
-            'allModels' => $match->homeTotal,
-        ]);
-
-        $at_provider = new ArrayDataProvider([
-            'allModels' => $match->awayTotal,
-        ]);
-
-        $power_provider = new ArrayDataProvider([
-            'allModels' => $match->powers,
-        ]);
-
-
-        return $this->render('odd',
-            [
-                'odds' => $odds,
-                'rank_provider'    => $rank_provider,
-                'fuck_provider'    => $fuck_provider,
-                'home_provider'    => $home_provider,
-                'away_provider'    => $away_provider,
-                'ft_provider'      => $ft_provider,
-                'ht_provider'      => $ht_provider,
-                'at_provider'      => $at_provider,
-                'power_provider'   => $power_provider,
-            ]
-        );
-    }
-
     /**
      * 比赛主页
      * @return string
@@ -181,6 +87,62 @@ class SiteController extends Controller
     }
 
     /**
+     * 比赛赔率页
+     * @return string
+     */
+    public function actionOdd()
+    {
+        $bet_odd = $lji_odd = array();
+        $fid = Yii::$app->request->get('fid', 0);
+
+        if($match = Matchs::findOne(['fid' => $fid]))
+        {
+            $bet_odd = $match->betOdds();
+            $ysb_odd = $match->ysbOdds();
+            $aom_odd = $match->aomOdds();
+        }
+
+        $odds = Cal::orderOdd($bet_odd, $ysb_odd);
+        $odds = Cal::orderOdd($odds, $aom_odd);
+        $odds = Cal::unsetTime($odds);
+
+        $provider = new ArrayDataProvider([
+            'allModels' => $match->scores,
+        ]);
+        return $this->render('odd',
+            [
+                'odds'     => $odds,
+                'provider' => $provider,
+            ]
+        );
+    }
+
+    /**
+     * 查询相似比赛
+     * @return string
+     */
+    public function actionSimilar()
+    {
+        $target = Matchs::findOne(['fid' => Yii::$app->request->get('fid', 0)]);
+        $sames  = Sames::find()->innerJoin('matchs', 'matchs.id = match_id')->orderBy(['mdate' => SORT_DESC])->all();
+        $sames  = Odds::sameBet($target->oddSame, $sames);
+        $sames  = Odds::sameLji($target->oddSame, $sames);
+        $sames  = Cal::sameSim($target->oddSame, $sames);
+        $sames  = Cal::sameSocre($target, $sames);
+
+        $provider = new ArrayDataProvider([
+            'allModels' => $sames,
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+        ]);
+
+        return $this->render("similar",[
+            "provider" => $provider,
+        ]);
+    }
+
+    /**
      * 存储比赛数据
      */
     public function actionStore()
@@ -194,26 +156,7 @@ class SiteController extends Controller
         $this->redirect("match");
     }
 
-    public function actionSimilar()
-    {
-        $target = Match::findOne(['fid' => Yii::$app->request->get('fid', 0)]);
-        $sames  = OddSame::find()->innerJoin('match', 'match.id = match_id')->orderBy(['mdate' => SORT_DESC])->all();
-        $sames  = Odds::sameBet($target->oddSame, $sames);
-        $sames  = Odds::sameLji($target->oddSame, $sames);
-        $sames  = Odds::sameSim($target->oddSame, $sames);
-        $sames  = Odds::sameSocre($target, $sames);
 
-        $provider = new ArrayDataProvider([
-            'allModels' => $sames,
-            'pagination' => [
-                'pageSize' => 10,
-            ],
-        ]);
-
-        return $this->render("similar",[
-            "provider" => $provider,
-        ]);
-    }
 
     public function actionAddRank()
     {
@@ -245,7 +188,7 @@ class SiteController extends Controller
     {
         ini_set ('memory_limit', '512M');
         ini_set ('max_execution_time', '0');
-        $matchs = Match::find()->andWhere(['<=', 'mdate', '2017-01-10 19:35:00'])->orderBy(['mdate' => SORT_DESC])->all();
+        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-12-17 22:00:00'])->orderBy(['mdate' => SORT_DESC])->all();
 
         while (!empty($matchs)){
             $m = array_splice($matchs, 0, 100);

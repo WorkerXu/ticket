@@ -119,4 +119,48 @@ class Matchs extends \yii\db\ActiveRecord
         return array();
     }
     //end
+
+    //获取赔率
+    public function betOdds()
+    {
+        return Odds::find()->where(['match_id' => $this->id, 'tag' => 'bet'])->orderBy(['time' => SORT_DESC])->asArray()->all();
+    }
+
+    public function ysbOdds()
+    {
+        return Odds::find()->where(['match_id' => $this->id, 'tag' => 'ysb'])->orderBy(['time' => SORT_DESC])->asArray()->all();
+    }
+
+    public function aomOdds()
+    {
+        return Odds::find()->where(['match_id' => $this->id, 'tag' => 'aom'])->orderBy(['time' => SORT_DESC])->asArray()->all();
+    }
+    //end
+
+    //获取sim
+    public function getBet()
+    {
+        return Sames::find()->where(['tag' => 'bet', 'match_id' => $this->id])->one();
+    }
+
+    public function getYsb()
+    {
+        return Sames::find()->where(['tag' => 'ysb', 'match_id' => $this->id])->one();
+    }
+
+    public function getAom()
+    {
+        return Sames::find()->where(['tag' => 'aom', 'match_id' => $this->id])->one();
+    }
+
+    public function getAys()
+    {
+        return Sames::find()->where(['tag' => 'ays', 'match_id' => $this->id])->one();
+    }
+
+    public function getYbs()
+    {
+        return Sames::find()->where(['tag' => 'ybs', 'match_id' => $this->id])->one();
+    }
+    //end
 }

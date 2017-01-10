@@ -312,164 +312,15 @@ class Cal extends Model
     }
 
     /* <-- 赛事数据展示部分END --> */
-    public static function calDiff($odds)
-    {
-        $count = count($odds);
 
-        for ($key = 0; $key < $count-1; $key++)
-        {
-            $key_nxt = array_keys($odds[$key]);
-            $key_pre = array_keys($odds[$key+1]);
+    /* <-- 赛事数据主要部分BEGIN --> */
 
-            foreach($key_nxt as $nxt)
-            {
-                foreach($key_pre as $pre)
-                {
-                    if($pre !== $nxt && $odds[$key][$nxt]['odd'] == $odds[$key+1][$pre]['odd'])
-                    {
-                        $odds[$key][$nxt][$pre."_home"] = number_format($odds[$key][$nxt]['home'] - $odds[$key+1][$pre]['home'], 2);
-                        $odds[$key][$nxt][$pre."_away"] = number_format($odds[$key][$nxt]['away'] - $odds[$key+1][$pre]['away'], 2);
-                    }
-                }
-            }
-        }
-        return $odds;
-    }
-
-    public static function addDiffs($odds, $odd_key, $diff_key)
-    {
-        $count = count($odds);
-
-        for ($key = $count-1; $key > 0; $key--)
-        {
-            if(isset($odds[$key][$odd_key][$diff_key."_home"]) && isset($odds[$key-1][$odd_key]) && !isset($odds[$key-1][$odd_key][$diff_key."_home"]))
-            {
-                $odds[$key-1][$odd_key][$diff_key."_home"] = number_format($odds[$key][$odd_key][$diff_key."_home"] + ($odds[$key-1][$odd_key]["home"] - $odds[$key][$odd_key]["home"]), 2);
-                $odds[$key-1][$odd_key][$diff_key."_away"] = number_format($odds[$key][$odd_key][$diff_key."_away"] + ($odds[$key-1][$odd_key]["away"] - $odds[$key][$odd_key]["away"]), 2);
-            }
-        }
-
-        return $odds;
-    }
-
-    public static function sameBet($target, $sames)
-    {
-        $home   = $target->b_home;
-        $away   = $target->b_away;
-        $handi  = $target->b_handi;
-
-        foreach($sames as $key => $same)
-        {
-            if ($same->b_home == '0' || $same->b_away == '0' || $away == '0')
-            {
-                unset($sames[$key]);
-                continue;
-            }
-            if(abs(number_format(floatval($same->b_home) / floatval($same->b_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->b_handi == $handi)
-            {
-                continue;
-            }
-            elseif (abs(number_format(floatval($same->b_away) / floatval($same->b_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->b_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->b_away, $same->b_home)) && $same->b_handi !== $handi)
-            {
-                continue;
-            }else{
-                unset($sames[$key]);
-            }
-        }
-
-        return $sames;
-    }
-
-    public static function sameLji($target, $sames)
-    {
-        $home   = $target->l_home;
-        $away   = $target->l_away;
-        $handi  = $target->l_handi;
-
-        foreach($sames as $key => $same)
-        {
-            if ($same->l_home == '0' || $same->l_away == '0' || $away == '0')
-            {
-                unset($sames[$key]);
-                continue;
-            }
-            if(abs(number_format(floatval($same->l_home) / floatval($same->l_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->l_handi == $handi)
-            {
-                continue;
-            }
-            elseif (abs(number_format(floatval($same->l_away) / floatval($same->l_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->l_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->l_away, $same->l_home)) && $same->l_handi !== $handi)
-            {
-                continue;
-            }else{
-                unset($sames[$key]);
-            }
-        }
-
-        return $sames;
-    }
-
-    public static function sameSim($target, $sames)
-    {
-        $home   = $target->s_home;
-        $away   = $target->s_away;
-        $handi  = $target->s_handi;
-
-        foreach($sames as $key => $same)
-        {
-            if ($same->s_home == '0' || $same->s_away == '0' || $away == '0')
-            {
-                unset($sames[$key]);
-                continue;
-            }
-            if(abs(number_format(floatval($same->s_home) / floatval($same->s_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->s_handi == $handi)
-            {
-                continue;
-            }
-            elseif (abs(number_format(floatval($same->s_away) / floatval($same->s_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->s_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->s_away, $same->s_home)) && $same->s_handi !== $handi)
-            {
-                continue;
-            }else{
-                unset($sames[$key]);
-            }
-        }
-
-        return $sames;
-    }
-
-    //临时方法
-    public static function sameSocre($target, $sames)
-    {
-        foreach ($sames as $key => $same)
-        {
-            continue;
-            if($same->match->socre->iasocre === $target->socre->iasocre)
-            {
-                if ($same->match->socre->isamatch === $target->socre->isamatch)
-                {
-
-                    if ($same->match->socre->itamatch === $target->socre->itamatch)
-                    {
-
-                    }
-                }
-            }
-            unset($sames[$key]);
-        }
-
-        return $sames;
-    }
-
-
-    private static function getByte($home, $away)
-    {
-        return floatval($home) > floatval($away) ? 0.085 : 0.060;
-    }
-
-    private static function compare($home, $away)
-    {
-        return floatval($home) > floatval($away) ? true : false;
-    }
-
+    /**
+     * 赔率排序
+     * @param $bet_odd
+     * @param $lji_odd
+     * @return array
+     */
     public static function orderOdd($bet_odd, $lji_odd)
     {
         $i = 0;
@@ -548,6 +399,38 @@ class Cal extends Model
         return $res;
     }
 
+    /**
+     * @param $target
+     * @param $sames
+     * @return mixed
+     */
+    public static function sameOdd($target, $sames)
+    {
+        $home   = $target->home;
+        $away   = $target->away;
+        $handi  = $target->handi;
+
+        foreach($sames as $key => $same)
+        {
+            if ($same->home == '0' || $same->away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
+            if(abs(number_format(floatval($same->home) / floatval($same->away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->away) / floatval($same->home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->away, $same->home)) && $same->handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
 
     /**
      * 存储比赛结果集
@@ -735,6 +618,13 @@ class Cal extends Model
         }
     }
 
+    /* <-- 辅助处理方法BEGIN --> */
+
+    /**
+     * 删除时间，赔率排序用
+     * @param $odds
+     * @return mixed
+     */
     public static function unsetTime($odds)
     {
         foreach ($odds as $key => $odd)
@@ -761,5 +651,29 @@ class Cal extends Model
         json_decode($string);
         return (json_last_error() == JSON_ERROR_NONE) ? $string : '{}';
     }
+
+    /**
+     * 获取比率
+     * @param $home
+     * @param $away
+     * @return float
+     */
+    private static function getByte($home, $away)
+    {
+        return floatval($home) > floatval($away) ? 0.085 : 0.060;
+    }
+
+    /**
+     * 比较逻辑
+     * @param $home
+     * @param $away
+     * @return bool
+     */
+    private static function compare($home, $away)
+    {
+        return floatval($home) > floatval($away) ? true : false;
+    }
+
+    /* <-- 辅助处理方法END --> */
 }
 
