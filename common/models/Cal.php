@@ -404,31 +404,34 @@ class Cal extends Model
      * @param $sames
      * @return mixed
      */
-    public static function sameOdd($target, $sames)
+    public static function sameOdd($target, $sames, $tag)
     {
+        $target = $target->$tag;
         $home   = $target->home;
         $away   = $target->away;
         $handi  = $target->handi;
 
-        foreach($sames as $key => $same)
-        {
-            if ($same->home == '0' || $same->away == '0' || $away == '0')
+        if ($away != '0'){
+            foreach($sames as $key => $same)
             {
-                unset($sames[$key]);
-                continue;
-            }
-            if(abs(number_format(floatval($same->home) / floatval($same->away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->handi == $handi)
-            {
-                continue;
-            }
-            elseif (abs(number_format(floatval($same->away) / floatval($same->home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->away, $same->home)) && $same->handi !== $handi)
-            {
-                continue;
-            }else{
-                unset($sames[$key]);
+                $same = $same->$tag;
+                if ($same->home == '0' || $same->away == '0')
+                {
+                    unset($sames[$key]);
+                    continue;
+                }
+                if(abs(number_format(floatval($same->home) / floatval($same->away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->handi == $handi)
+                {
+                    continue;
+                }
+                elseif (abs(number_format(floatval($same->away) / floatval($same->home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->away, $same->home)) && $same->handi !== $handi)
+                {
+                    continue;
+                }else{
+                    unset($sames[$key]);
+                }
             }
         }
-
         return $sames;
     }
 

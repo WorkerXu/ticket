@@ -3,7 +3,6 @@ namespace backend\controllers;
 
 use common\models\Cal;
 use common\models\Matchs;
-use common\models\Sames;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\web\Controller;
@@ -124,11 +123,13 @@ class SiteController extends Controller
     public function actionSimilar()
     {
         $target = Matchs::findOne(['fid' => Yii::$app->request->get('fid', 0)]);
-        $sames  = Sames::find()->innerJoin('matchs', 'matchs.id = match_id')->orderBy(['mdate' => SORT_DESC])->all();
-        $sames  = Odds::sameBet($target->oddSame, $sames);
-        $sames  = Odds::sameLji($target->oddSame, $sames);
-        $sames  = Cal::sameSim($target->oddSame, $sames);
-        $sames  = Cal::sameSocre($target, $sames);
+        $sames  = Matchs::find()->orderBy(['mdate' => SORT_DESC])->all();
+
+        $sames  = Cal::sameOdd($target, $sames, 'Bet');
+        $sames  = Cal::sameOdd($target, $sames, 'Ysb');
+        $sames  = Cal::sameOdd($target, $sames, 'Aom');
+        $sames  = Cal::sameOdd($target, $sames, 'Ays');
+        $sames  = Cal::sameOdd($target, $sames, 'Ybs');
 
         $provider = new ArrayDataProvider([
             'allModels' => $sames,
@@ -188,7 +189,7 @@ class SiteController extends Controller
     {
         ini_set ('memory_limit', '512M');
         ini_set ('max_execution_time', '0');
-        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-12-17 22:00:00'])->orderBy(['mdate' => SORT_DESC])->all();
+        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-12-14 02:30:00'])->orderBy(['mdate' => SORT_DESC])->all();
 
         while (!empty($matchs)){
             $m = array_splice($matchs, 0, 100);
