@@ -35,7 +35,7 @@ class Matchs extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['fid', 'mdate', 'league', 'hname', 'aname', 'score'], 'required'],
+            [['fid'], 'required'],
             [['fid'], 'integer'],
             [['mdate'], 'safe'],
             [['league', 'hname', 'aname', 'score'], 'string', 'max' => 15],

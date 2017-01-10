@@ -245,7 +245,7 @@ class SiteController extends Controller
     {
         ini_set ('memory_limit', '512M');
         ini_set ('max_execution_time', '0');
-        $matchs = Match::find()->andWhere(['<=', 'mdate', '2016-11-22 16:29:00'])->orderBy(['mdate' => SORT_DESC])->all();
+        $matchs = Match::find()->andWhere(['<=', 'mdate', '2017-01-10 19:35:00'])->orderBy(['mdate' => SORT_DESC])->all();
 
         while (!empty($matchs)){
             $m = array_splice($matchs, 0, 100);
@@ -255,7 +255,7 @@ class SiteController extends Controller
                 if (!empty($data))
                 {
                     unset($data['id']);
-                    Odds::store($data);
+                    Cal::store($data);
                 }
                 unset($data);
             }
