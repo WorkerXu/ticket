@@ -157,8 +157,6 @@ class SiteController extends Controller
         $this->redirect("match");
     }
 
-
-
     public function actionAddRank()
     {
         ini_set ('memory_limit', '512M');
