@@ -75,27 +75,6 @@ class Match extends \yii\db\ActiveRecord
         return Odd::find()->where(['match_id' => $this->id, 'tag' => 'lji'])->orderBy(['time' => SORT_DESC])->asArray()->all();
     }
 
-    public function getBetFirstOdd()
-    {
-        return Odd::find()->where(['match_id' => $this->id, 'tag' => 'bet'])->orderBy(['time' => SORT_ASC])->limit(1)->asArray()->one();
-    }
-
-    public function getLjiFirstOdd()
-    {
-        return Odd::find()->where(['match_id' => $this->id, 'tag' => 'lji'])->orderBy(['time' => SORT_ASC])->limit(1)->asArray()->one();
-    }
-
-    public function getBetSameLjiOdd()
-    {
-        $lji = $this->getLjiFirstOdd();
-
-        if(isset($lji['time']))
-        {
-            return Odd::find()->where(['match_id' => $this->id, 'tag' => 'bet'])->andWhere(['<=', 'time', $lji['time']])->orderBy(['time' => SORT_DESC])->limit(1)->asArray()->one();
-        }
-        return array();
-    }
-
     public function getOddSame()
     {
         return $this->hasOne(OddSame::className(), ['match_id' => 'id']);

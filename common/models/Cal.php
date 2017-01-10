@@ -1,188 +1,765 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: xutao
- * Date: 16/12/8
- * Time: 11:21
- */
-
 namespace common\models;
 
+use Yii;
 use yii\base\Model;
+use common\helpers\Curl;
+use yii\helpers\ArrayHelper;
+
+/**
+ * Cal model
+ *
+ */
 
 class Cal extends Model
 {
 
-    public $hsum;
-    public $hscore;
-    public $hasocre;
-    public $asum;
-    public $ascore;
-    public $aasocre;
-    public $hmatchw;
-    public $hmatchd;
-    public $hmatchl;
-    public $amatchw;
-    public $amatchd;
-    public $amatchl;
-    public $hamatchw;
-    public $hamatchd;
-    public $hamatchl;
-    public $aamatchw;
-    public $aamatchd;
-    public $aamatchl;
-    public $fw;
-    public $fd;
-    public $fl;
-    public $fhw;
-    public $fhd;
-    public $fhl;
-    public $fsw;
-    public $fsd;
-    public $fsl;
-    public $hjw;
-    public $hjd;
-    public $hjl;
-    public $ajw;
-    public $ajd;
-    public $ajl;
-    public $hjsw;
-    public $hjsd;
-    public $hjsl;
-    public $ajsw;
-    public $ajsd;
-    public $ajsl;
-    public $hajw;
-    public $hajd;
-    public $hajl;
-    public $aajw;
-    public $aajd;
-    public $aajl;
-    public $hajsw;
-    public $hajsd;
-    public $hajsl;
-    public $aajsw;
-    public $aajsd;
-    public $aajsl;
+    public static $BET_ODD;
+    public static $YSB_ODD;
+    public static $AOM_ODD;
+    public static $ALL_SOC;
+    public static $HOM_SOC;
+    public static $AWY_SOC;
 
-    public function rules()
+    /* <-- 处理数据结构部分BEGIN --> */
+
+    /**
+     * 获取data数据
+     * @param $json
+     * @return array
+     */
+    public static function getData($json)
     {
-        return [
-            [$this->getAllattr(), 'default', 'value' => 0],
-        ];
+        $res = json_decode($json);
+        return isset($res->data) ? $res->data : array();
     }
 
-    public function attributeLabels()
+    /**
+     * 处理比赛信息
+     * @param $data
+     * @return array
+     */
+    public static function getMatch($data)
     {
-        return [
-            "hscore" => "主队总积分",
-            "ascore" => "客队总积分",
-            "hsum" => "总场数",
-            "hasocre" => "主队主积分",
-            "aasocre" => "客队客积分",
-            "asum" => "主客场数",
-            "hmatchw" => "主队总战绩胜",
-            "hmatchd" => "主队总战绩平",
-            "hmatchl" => "主队总战绩负",
-            "amatchw" => "客队总战绩胜",
-            "amatchd" => "客队总战绩平",
-            "amatchl" => "客队总战绩负",
-            "hamatchw" => "主队主战绩胜",
-            "hamatchd" => "主队主战绩平",
-            "hamatchl" => "主队主战绩负",
-            "aamatchw" => "客队客战绩胜",
-            "aamatchd" => "客队客战绩平",
-            "aamatchl" => "客队客战绩负",
-            "fw" => "对阵胜",
-            "fd" => "对阵平",
-            "fl" => "对阵负",
-            "fhw" => "主对阵胜",
-            "fhd" => "主对阵平",
-            "fhl" => "主对阵负",
-            "fsw" => "三场对阵胜",
-            "fsd" => "三场对阵平",
-            "fsl" => "三场对阵负",
-            "hjw" => "主队十场胜",
-            "hjd" => "主队十场平",
-            "hjl" => "主队十场负",
-            "ajw" => "客队十场胜",
-            "ajd" => "客队十场平",
-            "ajl" => "客队十场负",
-            "hjsw" => "主队三场胜",
-            "hjsd" => "主队三场平",
-            "hjsl" => "主队三场负",
-            "ajsw" => "客队三场胜",
-            "ajsd" => "客队三场平",
-            "ajsl" => "客队三场负",
-            "hajw" => "主队十场主场胜",
-            "hajd" => "主队十场主场平",
-            "hajl" => "主队十场主场负",
-            "aajw" => "客队十场客场胜",
-            "aajd" => "客队十场客场平",
-            "aajl" => "客队十场客场负",
-            "hajsw" => "主队三场主场胜",
-            "hajsd" => "主队三场主场平",
-            "hajsl" => "主队三场主场负",
-            "aajsw" => "客队三场客场胜",
-            "aajsd" => "客队三场客场平",
-            "aajsl" => "客队三场客场负",
-        ];
+        $res = array();
+
+        if(isset($data['fid']) || isset($data->fid))
+        {
+            $res['fid']    = ArrayHelper::getValue($data, 'fid');
+            $res['mdate']  = ArrayHelper::getValue($data, 'vsdate');
+            $res['hname']  = ArrayHelper::getValue($data, 'hname');
+            $res['aname']  = ArrayHelper::getValue($data, 'aname');
+            $res['league'] = ArrayHelper::getValue($data, 'lname');
+            $res['score']  = ArrayHelper::getValue($data, 'hscore'). ":" .ArrayHelper::getValue($data, 'ascore');
+        }
+
+        return $res;
     }
 
-    private function getAllattr()
+    /**
+     * 处理赔率
+     * @param $odds
+     * @param $tag
+     * @return array
+     */
+    public static function getOdd($odds, $tag)
     {
-        return[
-            "hscore",
-            "ascore",
-            "hsum",
-            "hasocre",
-            "aasocre",
-            "asum",
-            "hmatchw",
-            "hmatchd",
-            "hmatchl",
-            "amatchw",
-            "amatchd",
-            "amatchl",
-            "hamatchw",
-            "hamatchd",
-            "hamatchl",
-            "aamatchw",
-            "aamatchd",
-            "aamatchl",
-            "fw",
-            "fd",
-            "fl",
-            "fhw",
-            "fhd",
-            "fhl",
-            "fsw",
-            "fsd",
-            "fsl",
-            "hjw",
-            "hjd",
-            "hjl",
-            "ajw",
-            "ajd",
-            "ajl",
-            "hjsw",
-            "hjsd",
-            "hjsl",
-            "ajsw",
-            "ajsd",
-            "ajsl",
-            "hajw",
-            "hajd",
-            "hajl",
-            "aajw",
-            "aajd",
-            "aajl",
-            "hajsw",
-            "hajsd",
-            "hajsl",
-            "aajsw",
-            "aajsd",
-            "aajsl",
+        $i = 0;
+        $res = array();
+
+        foreach ($odds as $odd)
+        {
+            if(isset($odd->time)){
+                $res[$i]['tag'] = $tag;
+                $res[$i]['time'] = $odd->time;
+                $res[$i]['home'] = $odd->home;
+                $res[$i]['away'] = $odd->away;
+                $res[$i]['odd']  = $odd->handi;
+                $res[$i]['home_text'] = $odd->s1 == 1 ? 'text-danger' : 'text-info';
+                $res[$i]['away_text'] = $odd->s2 == 1 ? 'text-danger' : 'text-info';
+
+            }
+            $i++;
+        }
+
+        return $res;
+    }
+
+    /**
+     * 处理赛事数据
+     * @param $rank
+     * @param string $tag
+     * @return mixed
+     */
+    public static function getOneStep($rank, $tag, $type)
+    {
+        $ctag  = $tag .'standing';
+        $ctype = $type . 'win';
+        if(isset($rank->ranks))
+        {
+            $ranks = $rank->ranks;
+            if (isset($ranks[0]->$ctag->$ctype))
+            {
+                $res['win']  = ArrayHelper::getValue($rank, 'ranks.0.'. $tag .'standing.'. $type .'win',  '0');
+                $res['draw'] = ArrayHelper::getValue($rank, 'ranks.0.'. $tag .'standing.'. $type .'draw', '0');
+                $res['lost'] = ArrayHelper::getValue($rank, 'ranks.0.'. $tag .'standing.'. $type .'lost', '0');
+            }
+        }
+        $res['tag']  = $type.$tag.'standing';
+        return $res;
+    }
+
+    public static function getTwoStep($rank, $tag)
+    {
+        $res['lost'] = ArrayHelper::getValue($rank, $tag.'_datatotal.lost', '0');
+        $res['draw'] = ArrayHelper::getValue($rank, $tag.'_datatotal.draw', '0');
+        $res['win']  = ArrayHelper::getValue($rank, $tag.'_datatotal.win',  '0');
+        $res['tag']  = $tag.'_datatotal';
+
+        return $res;
+    }
+
+    public static function getThrStep($rank, $tag)
+    {
+        $res['win']  = ArrayHelper::getValue($rank, 'win',  '0');
+        $res['draw'] = ArrayHelper::getValue($rank, 'draw', '0');
+        $res['lost'] = ArrayHelper::getValue($rank, 'lost', '0');
+        $res['tag']  = $tag;
+
+        return $res;
+    }
+
+    /* <-- 处理数据结构部分END --> */
+
+    /* <-- curl获取数据部分BEGIN --> */
+
+    /**
+     * 获取比赛列表
+     * @param null $day
+     * @return bool
+     */
+    public static function matchList($day = null)
+    {
+        $post_data = [
+            "mytime" => time()."000",
+            "stid"   => 1,
+            "t"      => 1,
+            "c_key"  => "c28d797bdf3f789e759150cdac45957a",
+            "c_ck"   => "MjM4OTUyNmJiZmFjZGQ4YWQ4ZjY0Njk1ZjIxMWU3MDhlNjc1NzU",
+            "cid"    => 9,
+            "c_id"   => 41000,
+            "c_type" => 2,
+            "c_cpid" => 2,
+            "suid"	 => "51135b8f9224fabfe13e8ff68d18729c",
+            "quid"   => 238952
         ];
+
+        if($day)
+        {
+            $post_data['t']   = 2;
+            $post_data['day'] = intval($day);
+        }
+
+        try{
+            $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
+            $curl->setData($post_data);
+            return $curl->execute()->getResponseText();
+        }
+        catch(\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * 获取赛事赔率
+     * @param $fid
+     * @param $vsdate
+     * @param int $lji
+     * @return bool
+     * 9 易胜博
+     * 502 12BET
+     * 5 澳门
+     */
+    public static function matchOdd($fid, $vsdate, $bet = 502, $ysb = 9, $aom = 5)
+    {
+        $post_data = [
+            "vsdate" => $vsdate,
+            "fid"    => $fid,
+            "t"      => 2,
+            "c_key"  => "efff0a84f860ff38fe8f5abfa0a68496",
+            "c_id"   => 40020,
+            "c_type" => 2,
+            "c_cpid" => 2,
+            "suid"	 => "51135b8f9224fabfe13e8ff68d18729c",
+        ];
+
+        try{
+            $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
+            //bet赔率
+            $post_data['cid'] = $bet;
+            $curl->setData($post_data);
+            self::$BET_ODD = self::isJson($curl->execute()->getResponseText());
+            //易胜博赔率
+            $post_data['cid'] = $ysb;
+            $curl->setData($post_data);
+            self::$YSB_ODD = self::isJson($curl->execute()->getResponseText());
+            //澳门赔率
+            $post_data['cid'] = $aom;
+            $curl->setData($post_data);
+            self::$AOM_ODD = self::isJson($curl->execute()->getResponseText());
+            //end
+            $curl->close();
+        }
+        catch(\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * 获取赛事数据
+     * @param $fid
+     * @return bool
+     */
+    public static function matchRank($fid)
+    {
+        $post_data = [
+            "fid"    => $fid,
+            "c_key"  => "8a7f6b611dd399c8cafcc46c35b9853c",
+            "quid"   => 238952,
+            "c_id"   => 40006,
+            "c_type" => 2,
+            "c_cpid" => 2,
+            "suid"	 => "51135b8f9224fabfe13e8ff68d18729c",
+        ];
+
+        try{
+            $curl = new Curl("i.qqshidao.com", "/api/index.php", "POST", 80, true);
+
+            //获取id
+            $cofo = $post_data;
+            $cofo['c_ck'] = 'MjM4OTUyN2NjMDJkOTE4NTE3N2RkNWEyZDAxMTdlZDhkMGRhYmE=';
+            $curl->setData($cofo);
+            $hid = self::getData($curl->execute()->getResponseText())->hid;
+            $aid = self::getData($curl->execute()->getResponseText())->aid;
+
+            //获取第一页
+            $coft = $post_data;
+            $coft['c_id']   = 41101;
+            $coft['c_key'] = '541ba457d67da316c6acbbd1e57004f5';
+            $curl->setData($coft);
+            self::$ALL_SOC = self::isJson($curl->execute()->getResponseText());
+
+            //获取第二页
+            $cofr = $post_data;
+            $cofr['c_id']    = 40026;
+            $cofr['id']      = $hid;
+            $cofr['t']       = 1;
+            $cofr['ishome']  = 1;
+            $cofr['c_key']   = '5e54b08fc6203e194a1b837cc5bc15a0';
+            $curl->setData($cofr);
+            self::$HOM_SOC = self::isJson($curl->execute()->getResponseText());
+
+            //获取第三页
+            $coff = $post_data;
+            $coff['c_id']    = 40026;
+            $coff['id']      = $aid;
+            $coff['t']       = 2;
+            $coff['ishome']  = 0;
+            $coff['c_key']   = '5e54b08fc6203e194a1b837cc5bc15a0';
+            $curl->setData($coff);
+            self::$AWY_SOC = self::isJson($curl->execute()->getResponseText());
+
+            //结束
+            $curl->close();
+        }
+        catch(\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    /* <-- curl获取数据部分END --> */
+
+    /* <-- 赛事数据展示部分BEGIN --> */
+
+    /**
+     * 筛选比赛类型
+     * @param $list
+     * @param $params
+     * @return mixed
+     */
+    public static function dealMatch($list, $params)
+    {
+        if(!empty($list))
+        {
+            if (isset($params['type'])){
+                foreach ($list as $key => $match)
+                {
+                    if($params['type'] == 2)
+                    {
+                        break;
+                    }
+                    elseif ($match->isjczq != $params['type'])
+                    {
+                        unset($list[$key]);
+                    }
+                }
+            }
+        }
+        return $list;
+    }
+
+    /* <-- 赛事数据展示部分END --> */
+    public static function calDiff($odds)
+    {
+        $count = count($odds);
+
+        for ($key = 0; $key < $count-1; $key++)
+        {
+            $key_nxt = array_keys($odds[$key]);
+            $key_pre = array_keys($odds[$key+1]);
+
+            foreach($key_nxt as $nxt)
+            {
+                foreach($key_pre as $pre)
+                {
+                    if($pre !== $nxt && $odds[$key][$nxt]['odd'] == $odds[$key+1][$pre]['odd'])
+                    {
+                        $odds[$key][$nxt][$pre."_home"] = number_format($odds[$key][$nxt]['home'] - $odds[$key+1][$pre]['home'], 2);
+                        $odds[$key][$nxt][$pre."_away"] = number_format($odds[$key][$nxt]['away'] - $odds[$key+1][$pre]['away'], 2);
+                    }
+                }
+            }
+        }
+        return $odds;
+    }
+
+    public static function addDiffs($odds, $odd_key, $diff_key)
+    {
+        $count = count($odds);
+
+        for ($key = $count-1; $key > 0; $key--)
+        {
+            if(isset($odds[$key][$odd_key][$diff_key."_home"]) && isset($odds[$key-1][$odd_key]) && !isset($odds[$key-1][$odd_key][$diff_key."_home"]))
+            {
+                $odds[$key-1][$odd_key][$diff_key."_home"] = number_format($odds[$key][$odd_key][$diff_key."_home"] + ($odds[$key-1][$odd_key]["home"] - $odds[$key][$odd_key]["home"]), 2);
+                $odds[$key-1][$odd_key][$diff_key."_away"] = number_format($odds[$key][$odd_key][$diff_key."_away"] + ($odds[$key-1][$odd_key]["away"] - $odds[$key][$odd_key]["away"]), 2);
+            }
+        }
+
+        return $odds;
+    }
+
+    public static function sameBet($target, $sames)
+    {
+        $home   = $target->b_home;
+        $away   = $target->b_away;
+        $handi  = $target->b_handi;
+
+        foreach($sames as $key => $same)
+        {
+            if ($same->b_home == '0' || $same->b_away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
+            if(abs(number_format(floatval($same->b_home) / floatval($same->b_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->b_handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->b_away) / floatval($same->b_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->b_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->b_away, $same->b_home)) && $same->b_handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
+
+    public static function sameLji($target, $sames)
+    {
+        $home   = $target->l_home;
+        $away   = $target->l_away;
+        $handi  = $target->l_handi;
+
+        foreach($sames as $key => $same)
+        {
+            if ($same->l_home == '0' || $same->l_away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
+            if(abs(number_format(floatval($same->l_home) / floatval($same->l_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->l_handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->l_away) / floatval($same->l_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->l_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->l_away, $same->l_home)) && $same->l_handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
+
+    public static function sameSim($target, $sames)
+    {
+        $home   = $target->s_home;
+        $away   = $target->s_away;
+        $handi  = $target->s_handi;
+
+        foreach($sames as $key => $same)
+        {
+            if ($same->s_home == '0' || $same->s_away == '0' || $away == '0')
+            {
+                unset($sames[$key]);
+                continue;
+            }
+            if(abs(number_format(floatval($same->s_home) / floatval($same->s_away), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && $same->s_handi == $handi)
+            {
+                continue;
+            }
+            elseif (abs(number_format(floatval($same->s_away) / floatval($same->s_home), 3) - number_format(floatval($home) / floatval($away), 3)) <= self::getByte($home, $away) && str_replace('-', '', $same->s_handi) == str_replace('-', '', $handi) && (self::compare($home, $away) === self::compare($same->s_away, $same->s_home)) && $same->s_handi !== $handi)
+            {
+                continue;
+            }else{
+                unset($sames[$key]);
+            }
+        }
+
+        return $sames;
+    }
+
+    //临时方法
+    public static function sameSocre($target, $sames)
+    {
+        foreach ($sames as $key => $same)
+        {
+            continue;
+            if($same->match->socre->iasocre === $target->socre->iasocre)
+            {
+                if ($same->match->socre->isamatch === $target->socre->isamatch)
+                {
+
+                    if ($same->match->socre->itamatch === $target->socre->itamatch)
+                    {
+
+                    }
+                }
+            }
+            unset($sames[$key]);
+        }
+
+        return $sames;
+    }
+
+
+    private static function getByte($home, $away)
+    {
+        return floatval($home) > floatval($away) ? 0.085 : 0.060;
+    }
+
+    private static function compare($home, $away)
+    {
+        return floatval($home) > floatval($away) ? true : false;
+    }
+
+    public static function orderOdd($bet_odd, $lji_odd)
+    {
+        $i = 0;
+        $j = 0;
+        $count = count($lji_odd);
+        $res = array();
+
+        foreach ($bet_odd as $k=> $value)
+        {
+            if (isset($lji_odd[$j]) && strtotime($value['time']) <= strtotime($lji_odd[$j]['time']))
+            {
+                for ($j; $j <= $count; $j++)
+                {
+                    if (isset($lji_odd[$j]) && strtotime($value['time']) < strtotime($lji_odd[$j]['time']))
+                    {
+                        $res[$i]['time'] = $lji_odd[$j]['time'];
+                        $res[$i][$lji_odd[$j]['tag']] = $lji_odd[$j];
+                    }
+                    elseif (isset($lji_odd[$j]) && strtotime($value['time']) == strtotime($lji_odd[$j]['time']))
+                    {
+                        $res[$i]['time'] = $value['time'];
+                        $res[$i][$lji_odd[$j]['tag']] = $lji_odd[$j];
+                        if(isset($value['tag']))
+                        {
+                            $res[$i][$value['tag']] = $value;
+                        }
+                        else
+                        {
+                            $res[$i] = $res[$i] + $value;
+                        }
+                        $j++;
+                        break;
+                    }
+                    else
+                    {
+                        $res[$i]['time'] = $value['time'];
+                        if(isset($value['tag']))
+                        {
+                            $res[$i][$value['tag']] = $value;
+                        }
+                        else
+                        {
+                            $res[$i] = $value;
+                        }
+                        break;
+                    }
+
+                    $i++;
+                }
+            }
+            else
+            {
+                $res[$i]['time'] = $value['time'];
+                if(isset($value['tag']))
+                {
+                    $res[$i][$value['tag']] = $value;
+                }
+                else
+                {
+                    $res[$i] = $value;
+                }
+            }
+            $i++;
+        }
+
+        if($j < $count)
+        {
+            for ($key = $j; $key < $count; $key++)
+            {
+                $res[$i]['time'] = $lji_odd[$key]['time'];
+                $res[$i][$lji_odd[$key]['tag']] = $lji_odd[$key];
+                $i++;
+            }
+        }
+
+        return $res;
+    }
+
+
+    /**
+     * 存储比赛结果集
+     * @param $match
+     */
+    public static function store($match)
+    {
+        ini_set ('memory_limit', '512M');
+        try
+        {
+            $transaction = Yii::$app->getDb()->beginTransaction();
+
+            $exist = Matchs::findOne(['fid' => $match['fid']]);
+
+            if(!is_null($exist))
+            {
+                if(!$exist->delete())
+                {
+                    throw new \Exception('match fail delete');
+                }
+            }
+
+            $model = new Matchs();
+            $model->isNewRecord == true;
+
+            $model->setAttributes($match);
+
+            if($model->save())
+            {
+                self::matchOdd($model->fid, $model->mdate);
+
+                //插入bet赔率
+                $bet_odd = self::getData(self::$BET_ODD);
+                $bet_odd = self::getOdd($bet_odd, "bet");
+
+                foreach($bet_odd as $bet)
+                {
+                    $odd = new Odds();
+                    $odd->setAttributes($bet);
+                    $odd->match_id = $model->id;
+                    if(!$odd->save()){
+                        throw new \Exception('fail insert bet odd');
+                    }
+                }
+
+                //插入易胜博赔率
+                $ysb_odd = self::getData(self::$YSB_ODD);
+                $ysb_odd = self::getOdd($ysb_odd, "ysb");
+
+                foreach($ysb_odd as $ysb)
+                {
+                    $odd = new Odds();
+                    $odd->setAttributes($ysb);
+                    $odd->match_id = $model->id;
+                    if(!$odd->save()){
+                        throw new \Exception('fail insert ysb odd');
+                    }
+                }
+
+                //插入澳门赔率
+                $aom_odd = self::getData(self::$AOM_ODD);
+                $aom_odd = self::getOdd($aom_odd, "aom");
+
+                foreach($aom_odd as $aom)
+                {
+                    $odd = new Odds();
+                    $odd->setAttributes($aom);
+                    $odd->match_id = $model->id;
+                    if(!$odd->save()){
+                        throw new \Exception('fail insert aom odd');
+                    }
+                }
+
+                //插入sim赔率
+                $tags = [
+                    'bet',
+                    'ysb',
+                    'aom',
+                    'ays',
+                    'ybs',
+                ];
+                foreach ($tags as $tag)
+                {
+                    $same = new Sames();
+                    $odd  = $model->$tag();
+
+                    $same->home  = isset($odd['home']) ? $odd['home'] : '0';
+                    $same->away  = isset($odd['away']) ? $odd['away'] : '0';
+                    $same->handi = isset($odd['odd'])  ? $odd['odd']  : '0';
+                    $same->tag   = $tag;
+                    $same->match_id = $model->id;
+
+                    if(!$same->save())
+                    {
+                        throw new \Exception('fail insert same '. $tag .' odd');
+                    }
+
+                }
+
+                //插入赛事数据
+                self::matchRank($model->fid);
+                //主客场
+                $map  = [
+                    [
+                        'tag' => 'home',
+                        'type' => '',
+                    ],
+                    [
+                        'tag' => 'home',
+                        'type' => 'c',
+                    ],
+                    [
+                        'tag' => 'away',
+                        'type' => '',
+                    ],
+                    [
+                        'tag' => 'away',
+                        'type' => 'c',
+                    ],
+                ];
+                foreach ($map as $m)
+                {
+                    $score = new Scores();
+                    $rank  = self::getOneStep(self::getData(self::$ALL_SOC), $m['tag'], $m['type']);
+                    $score->match_id = $model->id;
+                    $score->setAttributes($rank);
+
+                    if(!$score->save())
+                    {
+                        throw new \Exception(json_encode($score->getErrors()));
+                    }
+                }
+                unset($m);
+
+                //近十场和对阵
+                $map  = [
+                    'home',
+                    'away',
+                    'fuck',
+                ];
+                foreach ($map as $m)
+                {
+                    $score = new Scores();
+                    $rank  = self::getTwoStep(self::getData(self::$ALL_SOC), $m);
+                    $score->match_id = $model->id;
+                    $score->setAttributes($rank);
+
+                    if(!$score->save())
+                    {
+                        throw new \Exception(json_encode($score->getErrors()));
+                    }
+                }
+                unset($m);
+
+                //主客近十场
+                $map  = [
+                    [
+                        'tag' => 'homes',
+                        'val' => self::$HOM_SOC,
+                    ],
+                    [
+                        'tag' => 'aways',
+                        'val' => self::$AWY_SOC,
+                    ],
+                ];
+                foreach ($map as $m)
+                {
+                    $score = new Scores();
+                    $rank  = self::getThrStep(self::getData($m['val']), $m['tag']);
+                    $score->match_id = $model->id;
+                    $score->setAttributes($rank);
+
+                    if(!$score->save())
+                    {
+                        throw new \Exception(json_encode($score->getErrors()));
+                    }
+                }
+
+                $transaction->commit();
+            }
+        }catch (\Exception $e){
+
+            $transaction->rollBack();
+            var_dump($e->getMessage());exit();
+        }
+    }
+
+    public static function unsetTime($odds)
+    {
+        foreach ($odds as $key => $odd)
+        {
+            if(isset($odd['time']))
+            {
+                unset($odds[$key]['time']);
+            }
+        }
+        return $odds;
+    }
+
+    /**
+     * 检验是否为json数据
+     * @param $string
+     * @return string
+     */
+    private static function isJson($string)
+    {
+        if(!is_string($string))
+        {
+            return '{}';
+        }
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE) ? $string : '{}';
     }
 }
+
